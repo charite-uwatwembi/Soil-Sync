@@ -49,29 +49,23 @@ function App() {
       try {
         const currentUser = await authService.getCurrentUser();
         setUser(currentUser);
-        // Always load user data (demo or real)
-        loadUserData();
+        if (currentUser) {
+          loadUserData();
+        }
       } catch (error) {
-        console.error('Auth initialization error:', error);
-        // Load demo data on error
-        loadUserData();
+        setUser(null);
       }
     };
-
     initAuth();
-
-    // Listen for auth changes only if not in demo mode
     const { data: { subscription } } = authService.onAuthStateChange((user) => {
       setUser(user);
       if (user) {
         loadUserData();
       } else {
-        // Clear user data when signed out, but keep demo data
         setHistoryData([]);
         setChartData([]);
       }
     });
-
     return () => {
       subscription?.unsubscribe();
     };
@@ -197,61 +191,74 @@ function App() {
         isCollapsed ? 'ml-16' : 'ml-64'
       } mt-16 p-6`}>
         <div className="max-w-7xl mx-auto">
-          {activePage === 'Dashboard' ? (
-            <div className="space-y-6">
-              {/* Top Row - Current Recommendation */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2">
-                  <RecommendationCard 
+          {/* If not authenticated, show only AuthModal */}
+          {!user ? (
+            <AuthModal
+              isOpen={true}
+              onClose={() => {}}
+              onAuthSuccess={() => {
+                setShowAuthModal(false);
+                loadUserData();
+              }}
+              isDarkMode={isDarkMode}
+            />
+          ) : (
+            activePage === 'Dashboard' ? (
+              <div className="space-y-6">
+                {/* Top Row - Current Recommendation */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  <div className="lg:col-span-2">
+                    <RecommendationCard 
+                      isDarkMode={isDarkMode}
+                      recommendation={currentRecommendation}
+                    />
+                  </div>
+                  <div>
+                    <SoilForm 
+                      isDarkMode={isDarkMode}
+                      onSubmit={handleSoilSubmit}
+                      loading={loading}
+                    />
+                  </div>
+                </div>
+
+                {/* Middle Row - Soil Visualization */}
+                <div>
+                  <SoilVisualizationChart 
                     isDarkMode={isDarkMode}
+                    soilData={currentSoilData}
                     recommendation={currentRecommendation}
                   />
                 </div>
+
+                {/* Third Row - Chart and News */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  <div className="lg:col-span-2">
+                    <RecommendationChart 
+                      isDarkMode={isDarkMode}
+                      data={chartData}
+                    />
+                  </div>
+                  <div>
+                    <AgriNews isDarkMode={isDarkMode} />
+                  </div>
+                </div>
+
+                {/* Bottom Row - Data Table */}
                 <div>
-                  <SoilForm 
+                  <DataTable 
                     isDarkMode={isDarkMode}
-                    onSubmit={handleSoilSubmit}
-                    loading={loading}
+                    data={historyData}
                   />
                 </div>
               </div>
-
-              {/* Middle Row - Soil Visualization */}
-              <div>
-                <SoilVisualizationChart 
-                  isDarkMode={isDarkMode}
-                  soilData={currentSoilData}
-                  recommendation={currentRecommendation}
-                />
-              </div>
-
-              {/* Third Row - Chart and News */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2">
-                  <RecommendationChart 
-                    isDarkMode={isDarkMode}
-                    data={chartData}
-                  />
-                </div>
-                <div>
-                  <AgriNews isDarkMode={isDarkMode} />
-                </div>
-              </div>
-
-              {/* Bottom Row - Data Table */}
-              <div>
-                <DataTable 
-                  isDarkMode={isDarkMode}
-                  data={historyData}
-                />
-              </div>
-            </div>
-          ) : (
-            <NavigationPages 
-              isDarkMode={isDarkMode} 
-              activePage={activePage}
-              onSensorData={handleSensorData}
-            />
+            ) : (
+              <NavigationPages 
+                isDarkMode={isDarkMode} 
+                activePage={activePage}
+                onSensorData={handleSensorData}
+              />
+            )
           )}
         </div>
       </main>
@@ -289,17 +296,6 @@ function App() {
           </div>
         </div>
       </footer>
-
-      {/* Auth Modal */}
-      <AuthModal
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-        onAuthSuccess={() => {
-          setShowAuthModal(false);
-          loadUserData();
-        }}
-        isDarkMode={isDarkMode}
-      />
     </div>
   );
 }

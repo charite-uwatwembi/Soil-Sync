@@ -1,16 +1,16 @@
-import React from 'react';
-import { 
-  Home, 
-  BarChart3, 
-  FileText, 
-  Settings, 
-  User, 
-  Sprout,
-  Database,
-  TrendingUp,
-  Bell,
-  HelpCircle
+import {
+    BarChart3,
+    Bell,
+    Database,
+    FileText,
+    HelpCircle,
+    Home,
+    Settings,
+    Sprout,
+    TrendingUp,
+    User
 } from 'lucide-react';
+import React from 'react';
 import type { AuthUser } from '../services/authService';
 
 interface SidebarProps {
@@ -71,10 +71,10 @@ const Sidebar: React.FC<SidebarProps> = ({
           {!isCollapsed && (
             <div>
               <p className="font-medium">
-                {user ? user.fullName || user.email.split('@')[0] : 'Guest User'}
+                {user ? user.fullName || user.email.split('@')[0] : 'Sign In Required'}
               </p>
               <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                {user ? user.planType.charAt(0).toUpperCase() + user.planType.slice(1) + ' Plan' : 'Demo Mode'}
+                {user ? user.planType.charAt(0).toUpperCase() + user.planType.slice(1) + ' Plan' : ''}
               </p>
             </div>
           )}

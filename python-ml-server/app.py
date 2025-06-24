@@ -4,12 +4,14 @@ import pandas as pd
 from flask import Flask, request, jsonify
 import logging
 import re
+from flask_cors import CORS
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
+CORS(app)  # This enables CORS for all routes
 
 MODEL_COLUMNS = [
     'Temparature', 'Humidity', 'Moisture', 'Soil_Type', 'Crop_Type',
