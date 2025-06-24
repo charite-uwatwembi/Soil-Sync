@@ -1,3 +1,5 @@
+declare const Deno: any;
+
 import { corsHeaders } from '../_shared/cors.ts';
 
 interface NewsArticle {

@@ -1,13 +1,14 @@
+import { Target, TrendingUp, Zap } from 'lucide-react';
 import React from 'react';
-import { Zap, Target, TrendingUp } from 'lucide-react';
 
 interface RecommendationCardProps {
   isDarkMode: boolean;
   recommendation: {
     fertilizer: string;
-    rate: number;
-    confidence: number;
-    expectedYield: number;
+    rate: number | string;
+    confidence: number | string;
+    expectedYield: number | string;
+    cropName?: string;
   } | null;
 }
 
@@ -44,6 +45,11 @@ const RecommendationCard: React.FC<RecommendationCardProps> = ({
           <h3 className="text-lg font-semibold">Latest Recommendation</h3>
           <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
             AI-powered fertilizer analysis
+            {recommendation.cropName && (
+              <span className="block font-medium text-green-700 dark:text-green-400 mt-1">
+                For {recommendation.cropName.charAt(0).toUpperCase() + recommendation.cropName.slice(1)}
+              </span>
+            )}
           </p>
         </div>
       </div>
@@ -68,7 +74,7 @@ const RecommendationCard: React.FC<RecommendationCardProps> = ({
             <TrendingUp className="h-4 w-4 text-blue-600" />
             <span className="text-sm font-medium text-blue-600">Rate</span>
           </div>
-          <p className="text-lg font-bold">{recommendation.rate} kg/ha</p>
+          <p className="text-lg font-bold">{recommendation.rate}</p>
         </div>
 
         {/* Confidence */}
@@ -79,7 +85,7 @@ const RecommendationCard: React.FC<RecommendationCardProps> = ({
             <Zap className="h-4 w-4 text-purple-600" />
             <span className="text-sm font-medium text-purple-600">Confidence</span>
           </div>
-          <p className="text-lg font-bold">{recommendation.confidence}%</p>
+          <p className="text-lg font-bold">{recommendation.confidence}</p>
         </div>
       </div>
 
@@ -94,7 +100,7 @@ const RecommendationCard: React.FC<RecommendationCardProps> = ({
             Expected Yield Increase
           </p>
           <p className="text-2xl font-bold text-green-600">
-            +{recommendation.expectedYield}%
+            {recommendation.expectedYield}
           </p>
         </div>
       </div>

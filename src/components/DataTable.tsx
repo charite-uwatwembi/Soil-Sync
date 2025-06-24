@@ -1,5 +1,5 @@
+import { Download, FileSpreadsheet } from 'lucide-react';
 import React from 'react';
-import { FileSpreadsheet, Download } from 'lucide-react';
 
 interface DataTableProps {
   isDarkMode: boolean;
@@ -10,9 +10,6 @@ interface DataTableProps {
     fertilizer: string;
     rate: number;
     confidence: number;
-    phosphorus: number;
-    potassium: number;
-    nitrogen: number;
   }>;
 }
 
@@ -71,21 +68,6 @@ const DataTable: React.FC<DataTableProps> = ({ isDarkMode, data }) => {
                 }`}>
                   Confidence
                 </th>
-                <th className={`text-left py-3 px-4 font-medium text-sm ${
-                  isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                }`}>
-                  P (ppm)
-                </th>
-                <th className={`text-left py-3 px-4 font-medium text-sm ${
-                  isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                }`}>
-                  K (ppm)
-                </th>
-                <th className={`text-left py-3 px-4 font-medium text-sm ${
-                  isDarkMode ? 'text-gray-300' : 'text-gray-700'
-                }`}>
-                  N (%)
-                </th>
               </tr>
             </thead>
             <tbody>
@@ -115,9 +97,6 @@ const DataTable: React.FC<DataTableProps> = ({ isDarkMode, data }) => {
                       <span>{row.confidence}%</span>
                     </div>
                   </td>
-                  <td className="py-3 px-4 text-sm">{row.phosphorus}</td>
-                  <td className="py-3 px-4 text-sm">{row.potassium}</td>
-                  <td className="py-3 px-4 text-sm">{row.nitrogen}</td>
                 </tr>
               ))}
             </tbody>

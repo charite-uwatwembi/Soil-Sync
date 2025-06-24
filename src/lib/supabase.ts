@@ -3,14 +3,6 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://demo.supabase.co';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'demo-key';
 
-// Check if we're in demo mode - improved detection
-export const isDemoMode = !import.meta.env.VITE_SUPABASE_URL || 
-                         import.meta.env.VITE_SUPABASE_URL === 'https://demo.supabase.co' ||
-                         import.meta.env.VITE_SUPABASE_URL === 'https://your-project.supabase.co' ||
-                         !import.meta.env.VITE_SUPABASE_ANON_KEY ||
-                         import.meta.env.VITE_SUPABASE_ANON_KEY === 'demo-key' ||
-                         import.meta.env.VITE_SUPABASE_ANON_KEY === 'your-anon-key-here';
-
 // Create client with fallback for demo mode
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {

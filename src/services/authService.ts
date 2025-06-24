@@ -1,5 +1,4 @@
-import { supabase, isDemoMode } from '../lib/supabase';
-import type { User, AuthError } from '@supabase/supabase-js';
+import { supabase } from '../lib/supabase';
 
 export interface AuthUser {
   id: string;
@@ -12,10 +11,6 @@ export interface AuthUser {
 class AuthService {
   // Sign up with email and password
   async signUp(email: string, password: string, fullName?: string) {
-    if (isDemoMode) {
-      throw new Error('Authentication is not available in demo mode. Please configure Supabase to enable user accounts.');
-    }
-
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -40,10 +35,6 @@ class AuthService {
 
   // Sign in with email and password
   async signIn(email: string, password: string) {
-    if (isDemoMode) {
-      throw new Error('Authentication is not available in demo mode. Please configure Supabase to enable user accounts.');
-    }
-
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password
@@ -58,10 +49,6 @@ class AuthService {
 
   // Sign out
   async signOut() {
-    if (isDemoMode) {
-      return;
-    }
-
     const { error } = await supabase.auth.signOut();
     if (error) {
       throw new Error(error.message);
@@ -70,27 +57,15 @@ class AuthService {
 
   // Get current user
   async getCurrentUser(): Promise<AuthUser | null> {
-    if (isDemoMode) {
-      return null;
-    }
-
     const { data: { user } } = await supabase.auth.getUser();
-    
     if (!user) return null;
-
-    // Get user profile
-    const { data: profile } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', user.id)
-      .single();
 
     return {
       id: user.id,
       email: user.email!,
-      fullName: profile?.full_name || undefined,
-      avatarUrl: profile?.avatar_url || undefined,
-      planType: profile?.plan_type || 'free'
+      fullName: user.user_metadata?.full_name || undefined,
+      avatarUrl: user.user_metadata?.avatar_url || undefined,
+      planType: 'free'
     };
   }
 
@@ -112,10 +87,6 @@ class AuthService {
 
   // Update user profile
   async updateProfile(updates: Partial<Pick<AuthUser, 'fullName' | 'avatarUrl'>>) {
-    if (isDemoMode) {
-      throw new Error('Profile updates are not available in demo mode.');
-    }
-
     const { data: { user } } = await supabase.auth.getUser();
     
     if (!user) {
@@ -137,17 +108,6 @@ class AuthService {
 
   // Listen to auth state changes
   onAuthStateChange(callback: (user: AuthUser | null) => void) {
-    if (isDemoMode) {
-      // Return a dummy subscription for demo mode
-      return {
-        data: {
-          subscription: {
-            unsubscribe: () => {}
-          }
-        }
-      };
-    }
-
     return supabase.auth.onAuthStateChange(async (event, session) => {
       if (session?.user) {
         const authUser = await this.getCurrentUser();

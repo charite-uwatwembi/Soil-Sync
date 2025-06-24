@@ -1,4 +1,4 @@
-import { supabase, isDemoMode } from '../lib/supabase';
+import { supabase } from '../lib/supabase';
 
 export interface SMSMessage {
   id: string;
@@ -211,22 +211,6 @@ SoilSync - Smart Agriculture`;
     response: string, 
     type: 'recommendation' | 'help' | 'error'
   ) {
-    if (isDemoMode) {
-      // Store in local storage for demo
-      const logs = JSON.parse(localStorage.getItem('sms_logs') || '[]');
-      logs.unshift({
-        id: Date.now().toString(),
-        phoneNumber,
-        message,
-        response,
-        type,
-        timestamp: new Date().toISOString(),
-        status: 'delivered'
-      });
-      localStorage.setItem('sms_logs', JSON.stringify(logs.slice(0, 100))); // Keep last 100
-      return;
-    }
-
     try {
       // Store in Supabase (you might want to create a separate table for SMS logs)
       const { error } = await supabase
@@ -249,11 +233,6 @@ SoilSync - Smart Agriculture`;
 
   // Get SMS interaction history
   async getSMSHistory(limit: number = 50): Promise<SMSMessage[]> {
-    if (isDemoMode) {
-      const logs = JSON.parse(localStorage.getItem('sms_logs') || '[]');
-      return logs.slice(0, limit);
-    }
-
     try {
       const { data, error } = await supabase
         .from('sms_interactions')
@@ -283,12 +262,6 @@ SoilSync - Smart Agriculture`;
   // Send SMS via MTN Rwanda API (for production)
   async sendSMS(phoneNumber: string, message: string): Promise<boolean> {
     try {
-      if (isDemoMode) {
-        // Simulate SMS sending in demo mode
-        console.log(`SMS to ${phoneNumber}: ${message}`);
-        return true;
-      }
-
       // MTN Rwanda SMS API integration
       const response = await fetch('/api/send-sms', {
         method: 'POST',

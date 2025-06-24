@@ -1,17 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import Sidebar from './components/Sidebar';
-import TopBar from './components/TopBar';
-import SoilForm from './components/SoilForm';
+import { useEffect, useState } from 'react';
+import AgriNews from './components/AgriNews';
+import AuthModal from './components/AuthModal';
+import DataTable from './components/DataTable';
+import NavigationPages from './components/NavigationPages';
 import RecommendationCard from './components/RecommendationCard';
 import RecommendationChart from './components/RecommendationChart';
+import Sidebar from './components/Sidebar';
+import type { SoilModelInput } from './components/SoilForm';
+import SoilForm from './components/SoilForm';
 import SoilVisualizationChart from './components/SoilVisualizationChart';
-import AgriNews from './components/AgriNews';
-import DataTable from './components/DataTable';
-import AuthModal from './components/AuthModal';
-import NavigationPages from './components/NavigationPages';
-import { soilAnalysisService, type SoilData, type Recommendation } from './services/soilAnalysisService';
+import TopBar from './components/TopBar';
 import { authService, type AuthUser } from './services/authService';
-import { isDemoMode } from './lib/supabase';
+import { soilAnalysisService, type Recommendation, type SoilData } from './services/soilAnalysisService';
 
 interface HistoryData {
   id: number;
@@ -20,9 +20,6 @@ interface HistoryData {
   fertilizer: string;
   rate: number;
   confidence: number;
-  phosphorus: number;
-  potassium: number;
-  nitrogen: number;
 }
 
 function App() {
@@ -50,10 +47,8 @@ function App() {
   useEffect(() => {
     const initAuth = async () => {
       try {
-        if (!isDemoMode) {
-          const currentUser = await authService.getCurrentUser();
-          setUser(currentUser);
-        }
+        const currentUser = await authService.getCurrentUser();
+        setUser(currentUser);
         // Always load user data (demo or real)
         loadUserData();
       } catch (error) {
@@ -66,22 +61,20 @@ function App() {
     initAuth();
 
     // Listen for auth changes only if not in demo mode
-    if (!isDemoMode) {
-      const { data: { subscription } } = authService.onAuthStateChange((user) => {
-        setUser(user);
-        if (user) {
-          loadUserData();
-        } else {
-          // Clear user data when signed out, but keep demo data
-          setHistoryData([]);
-          setChartData([]);
-        }
-      });
+    const { data: { subscription } } = authService.onAuthStateChange((user) => {
+      setUser(user);
+      if (user) {
+        loadUserData();
+      } else {
+        // Clear user data when signed out, but keep demo data
+        setHistoryData([]);
+        setChartData([]);
+      }
+    });
 
-      return () => {
-        subscription?.unsubscribe();
-      };
-    }
+    return () => {
+      subscription?.unsubscribe();
+    };
   }, []);
 
   // Load user's historical data
@@ -92,13 +85,10 @@ function App() {
       const historyItems: HistoryData[] = analyses.map((analysis, index) => ({
         id: index + 1,
         date: new Date(analysis.createdAt).toLocaleDateString(),
-        cropType: analysis.soilData.cropType,
+        cropType: analysis.soilData.Crop_Type,
         fertilizer: analysis.fertilizer,
-        rate: analysis.rate,
-        confidence: Math.round(analysis.confidence),
-        phosphorus: analysis.soilData.phosphorus,
-        potassium: analysis.soilData.potassium,
-        nitrogen: analysis.soilData.nitrogen
+        rate: Number(analysis.rate),
+        confidence: Math.round(Number(analysis.confidence))
       }));
 
       setHistoryData(historyItems);
@@ -106,8 +96,8 @@ function App() {
       const chartItems = analyses.map(analysis => ({
         date: new Date(analysis.createdAt).toLocaleDateString(),
         fertilizer: analysis.fertilizer,
-        rate: analysis.rate,
-        confidence: Math.round(analysis.confidence)
+        rate: Number(analysis.rate),
+        confidence: Math.round(Number(analysis.confidence))
       }));
 
       setChartData(chartItems);
@@ -117,7 +107,7 @@ function App() {
     }
   };
 
-  const handleSoilSubmit = async (soilData: SoilData) => {
+  const handleSoilSubmit = async (soilData: SoilModelInput) => {
     setLoading(true);
     try {
       // Get prediction from the service
@@ -132,13 +122,10 @@ function App() {
       const newHistoryItem: HistoryData = {
         id: Date.now(),
         date: new Date().toLocaleDateString(),
-        cropType: soilData.cropType,
+        cropType: soilData.Crop_Type,
         fertilizer: recommendation.fertilizer,
-        rate: recommendation.rate,
-        confidence: Math.round(recommendation.confidence),
-        phosphorus: soilData.phosphorus,
-        potassium: soilData.potassium,
-        nitrogen: soilData.nitrogen
+        rate: recommendation.rate as number,
+        confidence: Math.round(Number(recommendation.confidence))
       };
 
       setHistoryData(prev => [newHistoryItem, ...prev]);
@@ -147,8 +134,8 @@ function App() {
       const newChartItem = {
         date: new Date().toLocaleDateString(),
         fertilizer: recommendation.fertilizer,
-        rate: recommendation.rate,
-        confidence: Math.round(recommendation.confidence)
+        rate: recommendation.rate as number,
+        confidence: Math.round(Number(recommendation.confidence))
       };
 
       setChartData(prev => [...prev, newChartItem].slice(-10)); // Keep last 10 entries
@@ -163,30 +150,24 @@ function App() {
 
   const handleSignOut = async () => {
     try {
-      if (!isDemoMode) {
-        await authService.signOut();
-      }
+      await authService.signOut();
     } catch (error) {
       console.error('Sign out failed:', error);
     }
   };
 
   const handleSensorData = (sensorData: any) => {
-    // Convert sensor data to soil data format
+    // Convert sensor data to soil data format (new model fields)
     const soilData: SoilData = {
-      phosphorus: sensorData.phosphorus,
-      potassium: sensorData.potassium,
-      nitrogen: sensorData.nitrogen,
-      organicCarbon: 2.5, // Default value
-      cationExchange: 15, // Default value
-      sandPercent: 40, // Default value
-      clayPercent: 30, // Default value
-      siltPercent: 30, // Default value
-      rainfall: 1200, // Default value
-      elevation: 1500, // Default value
-      cropType: 'maize' // Default value
+      Phosphorous: sensorData.phosphorus ?? 15,
+      Potassium: sensorData.potassium ?? 100,
+      Nitrogen: sensorData.nitrogen ?? 0.2,
+      Soil_Type: 'Loamy',
+      Crop_Type: 'maize',
+      Temparature: sensorData.temparature ?? 25,
+      Humidity: sensorData.humidity ?? 60,
+      Moisture: sensorData.moisture ?? 30
     };
-
     // Auto-submit for analysis
     handleSoilSubmit(soilData);
   };
@@ -195,13 +176,6 @@ function App() {
     <div className={`min-h-screen transition-colors duration-300 ${
       isDarkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'
     }`}>
-      {/* Demo Mode Banner */}
-      {isDemoMode && (
-        <div className="bg-yellow-500 text-black px-4 py-2 text-center text-sm font-medium">
-          🚀 Demo Mode - Configure Supabase to enable user accounts and cloud storage
-        </div>
-      )}
-      
       <Sidebar 
         isCollapsed={isCollapsed} 
         isDarkMode={isDarkMode} 
@@ -221,7 +195,7 @@ function App() {
       
       <main className={`transition-all duration-300 ${
         isCollapsed ? 'ml-16' : 'ml-64'
-      } ${isDemoMode ? 'mt-20' : 'mt-16'} p-6`}>
+      } mt-16 p-6`}>
         <div className="max-w-7xl mx-auto">
           {activePage === 'Dashboard' ? (
             <div className="space-y-6">
@@ -317,17 +291,15 @@ function App() {
       </footer>
 
       {/* Auth Modal */}
-      {!isDemoMode && (
-        <AuthModal
-          isOpen={showAuthModal}
-          onClose={() => setShowAuthModal(false)}
-          onAuthSuccess={() => {
-            setShowAuthModal(false);
-            loadUserData();
-          }}
-          isDarkMode={isDarkMode}
-        />
-      )}
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onAuthSuccess={() => {
+          setShowAuthModal(false);
+          loadUserData();
+        }}
+        isDarkMode={isDarkMode}
+      />
     </div>
   );
 }

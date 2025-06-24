@@ -1,19 +1,19 @@
-import React from 'react';
 import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
   BarElement,
-  Title,
-  Tooltip,
+  CategoryScale,
+  Chart as ChartJS,
+  Filler,
   Legend,
-  RadialLinearScale,
-  PointElement,
+  LinearScale,
   LineElement,
-  Filler
+  PointElement,
+  RadialLinearScale,
+  Title,
+  Tooltip
 } from 'chart.js';
-import { Bar, Radar } from 'react-chartjs-2';
 import { BarChart3, Target } from 'lucide-react';
+import React from 'react';
+import { Bar, Radar } from 'react-chartjs-2';
 
 ChartJS.register(
   CategoryScale,
@@ -31,23 +31,21 @@ ChartJS.register(
 interface SoilVisualizationChartProps {
   isDarkMode: boolean;
   soilData: {
-    phosphorus: number;
-    potassium: number;
-    nitrogen: number;
-    organicCarbon: number;
-    cationExchange: number;
-    sandPercent: number;
-    clayPercent: number;
-    siltPercent: number;
-    rainfall: number;
-    elevation: number;
-    cropType: string;
+    Phosphorous: number;
+    Potassium: number;
+    Nitrogen: number;
+    Soil_Type: string;
+    Crop_Type: string;
+    Temparature: number;
+    Humidity: number;
+    Moisture: number;
   } | null;
   recommendation: {
     fertilizer: string;
-    rate: number;
-    confidence: number;
-    expectedYield: number;
+    rate: number | string;
+    confidence: number | string;
+    expectedYield: number | string;
+    cropName?: string;
   } | null;
 }
 
@@ -80,11 +78,11 @@ const SoilVisualizationChart: React.FC<SoilVisualizationChartProps> = ({
       {
         label: 'Current Levels',
         data: [
-          soilData.phosphorus,
-          soilData.potassium,
-          soilData.nitrogen * 100, // Convert to percentage for better visualization
-          soilData.organicCarbon,
-          soilData.cationExchange
+          soilData.Phosphorous,
+          soilData.Potassium,
+          soilData.Nitrogen * 100, // Convert to percentage for better visualization
+          soilData.Moisture,
+          soilData.Moisture
         ],
         backgroundColor: [
           'rgba(34, 197, 94, 0.8)',
@@ -113,7 +111,7 @@ const SoilVisualizationChart: React.FC<SoilVisualizationChartProps> = ({
     datasets: [
       {
         label: 'Soil Texture Composition',
-        data: [soilData.sandPercent, soilData.clayPercent, soilData.siltPercent],
+        data: [soilData.Moisture, soilData.Moisture, soilData.Moisture],
         backgroundColor: 'rgba(34, 197, 94, 0.2)',
         borderColor: 'rgb(34, 197, 94)',
         pointBackgroundColor: 'rgb(34, 197, 94)',
@@ -234,10 +232,10 @@ const SoilVisualizationChart: React.FC<SoilVisualizationChartProps> = ({
         <div className="flex items-center justify-between">
           <div>
             <p className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-              Recommended for {soilData.cropType}
+              Recommended for {(recommendation.cropName || soilData.Crop_Type) && ((recommendation.cropName || soilData.Crop_Type).charAt(0).toUpperCase() + (recommendation.cropName || soilData.Crop_Type).slice(1))}
             </p>
             <p className="text-lg font-bold text-indigo-600">
-              {recommendation.fertilizer} at {recommendation.rate} kg/ha
+              {recommendation.fertilizer} at {recommendation.rate}
             </p>
           </div>
           <div className="text-right">
@@ -245,7 +243,7 @@ const SoilVisualizationChart: React.FC<SoilVisualizationChartProps> = ({
               Confidence
             </p>
             <p className="text-lg font-bold text-green-600">
-              {recommendation.confidence}%
+              {recommendation.confidence}
             </p>
           </div>
         </div>
@@ -281,25 +279,25 @@ const SoilVisualizationChart: React.FC<SoilVisualizationChartProps> = ({
           <p className={`text-xs font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
             Rainfall
           </p>
-          <p className="text-lg font-bold">{soilData.rainfall} mm</p>
+          <p className="text-lg font-bold">{soilData.Moisture} mm</p>
         </div>
         <div className={`p-3 rounded-lg ${isDarkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
           <p className={`text-xs font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
             Elevation
           </p>
-          <p className="text-lg font-bold">{soilData.elevation} m</p>
+          <p className="text-lg font-bold">{soilData.Temparature} m</p>
         </div>
         <div className={`p-3 rounded-lg ${isDarkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
           <p className={`text-xs font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
             Expected Yield
           </p>
-          <p className="text-lg font-bold text-green-600">+{recommendation.expectedYield}%</p>
+          <p className="text-lg font-bold text-green-600">{recommendation.expectedYield}</p>
         </div>
         <div className={`p-3 rounded-lg ${isDarkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
           <p className={`text-xs font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
             Crop Type
           </p>
-          <p className="text-lg font-bold capitalize">{soilData.cropType}</p>
+          <p className="text-lg font-bold capitalize">{(recommendation.cropName || soilData.Crop_Type) && ((recommendation.cropName || soilData.Crop_Type).charAt(0).toUpperCase() + (recommendation.cropName || soilData.Crop_Type).slice(1))}</p>
         </div>
       </div>
     </div>

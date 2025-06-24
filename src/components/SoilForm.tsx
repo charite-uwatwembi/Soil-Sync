@@ -1,39 +1,53 @@
+import { Beaker, Loader } from 'lucide-react';
 import React, { useState } from 'react';
-import { Beaker, Droplets, Mountain, Wheat, Loader } from 'lucide-react';
 
 interface SoilFormProps {
   isDarkMode: boolean;
-  onSubmit: (data: SoilData) => void;
+  onSubmit: (data: SoilModelInput) => void;
   loading?: boolean;
 }
 
-interface SoilData {
-  phosphorus: number;
-  potassium: number;
-  nitrogen: number;
-  organicCarbon: number;
-  cationExchange: number;
-  sandPercent: number;
-  clayPercent: number;
-  siltPercent: number;
-  rainfall: number;
-  elevation: number;
-  cropType: string;
+// Match backend model's expected input
+export interface SoilModelInput {
+  Temparature: number;
+  Humidity: number;
+  Moisture: number;
+  Soil_Type: string;
+  Crop_Type: string;
+  Nitrogen: number;
+  Potassium: number;
+  Phosphorous: number;
 }
 
+const soilTypeOptions = [
+  { value: 'Sandy', label: 'Sandy' },
+  { value: 'Loamy', label: 'Loamy' },
+  { value: 'Clay', label: 'Clay' },
+  { value: 'Silty', label: 'Silty' },
+  { value: 'Peaty', label: 'Peaty' },
+  { value: 'Chalky', label: 'Chalky' },
+  { value: 'Saline', label: 'Saline' },
+];
+
+const cropTypeOptions = [
+  { value: 'maize', label: 'Maize' },
+  { value: 'rice', label: 'Rice' },
+  { value: 'beans', label: 'Beans' },
+  { value: 'potato', label: 'Potato' },
+  { value: 'cassava', label: 'Cassava' },
+  { value: 'banana', label: 'Banana' },
+];
+
 const SoilForm: React.FC<SoilFormProps> = ({ isDarkMode, onSubmit, loading = false }) => {
-  const [formData, setFormData] = useState<SoilData>({
-    phosphorus: 0,
-    potassium: 0,
-    nitrogen: 0,
-    organicCarbon: 0,
-    cationExchange: 0,
-    sandPercent: 0,
-    clayPercent: 0,
-    siltPercent: 0,
-    rainfall: 0,
-    elevation: 0,
-    cropType: 'maize'
+  const [formData, setFormData] = useState<SoilModelInput>({
+    Temparature: 25,
+    Humidity: 60,
+    Moisture: 30,
+    Soil_Type: 'Loamy',
+    Crop_Type: 'maize',
+    Nitrogen: 0.2,
+    Potassium: 100,
+    Phosphorous: 15,
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -41,21 +55,12 @@ const SoilForm: React.FC<SoilFormProps> = ({ isDarkMode, onSubmit, loading = fal
     onSubmit(formData);
   };
 
-  const handleInputChange = (field: keyof SoilData, value: string | number) => {
+  const handleInputChange = (field: keyof SoilModelInput, value: string | number) => {
     setFormData(prev => ({
       ...prev,
-      [field]: typeof value === 'string' ? value : Number(value)
+      [field]: typeof value === 'string' && (field === 'Soil_Type' || field === 'Crop_Type') ? value : Number(value)
     }));
   };
-
-  const cropOptions = [
-    { value: 'maize', label: 'Maize' },
-    { value: 'rice', label: 'Rice' },
-    { value: 'beans', label: 'Beans' },
-    { value: 'potato', label: 'Potato' },
-    { value: 'cassava', label: 'Cassava' },
-    { value: 'banana', label: 'Banana' }
-  ];
 
   return (
     <div className={`p-6 rounded-xl border transition-all duration-200 hover:shadow-lg ${
@@ -67,249 +72,53 @@ const SoilForm: React.FC<SoilFormProps> = ({ isDarkMode, onSubmit, loading = fal
         </div>
         <div>
           <h3 className="text-lg font-semibold">New Soil Analysis</h3>
-          <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-            Enter soil parameters for fertilizer recommendation
-          </p>
+          <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Enter soil parameters for fertilizer recommendation</p>
         </div>
       </div>
-
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Soil Chemistry */}
-        <div>
-          <h4 className="font-medium mb-3 flex items-center space-x-2">
-            <Beaker className="h-4 w-4 text-green-600" />
-            <span>Soil Chemistry</span>
-          </h4>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className={`block text-sm font-medium mb-1 ${
-                isDarkMode ? 'text-gray-300' : 'text-gray-700'
-              }`}>
-                Phosphorus (ppm)
-              </label>
-              <input
-                type="number"
-                step="0.1"
-                value={formData.phosphorus}
-                onChange={(e) => handleInputChange('phosphorus', e.target.value)}
-                className={`w-full px-3 py-2 rounded-lg border transition-colors ${
-                  isDarkMode 
-                    ? 'bg-gray-700 border-gray-600 text-white focus:border-green-500' 
-                    : 'bg-white border-gray-300 text-gray-900 focus:border-green-500'
-                } focus:outline-none focus:ring-2 focus:ring-green-500/20`}
-              />
-            </div>
-            <div>
-              <label className={`block text-sm font-medium mb-1 ${
-                isDarkMode ? 'text-gray-300' : 'text-gray-700'
-              }`}>
-                Potassium (ppm)
-              </label>
-              <input
-                type="number"
-                step="0.1"
-                value={formData.potassium}
-                onChange={(e) => handleInputChange('potassium', e.target.value)}
-                className={`w-full px-3 py-2 rounded-lg border transition-colors ${
-                  isDarkMode 
-                    ? 'bg-gray-700 border-gray-600 text-white focus:border-green-500' 
-                    : 'bg-white border-gray-300 text-gray-900 focus:border-green-500'
-                } focus:outline-none focus:ring-2 focus:ring-green-500/20`}
-              />
-            </div>
-            <div>
-              <label className={`block text-sm font-medium mb-1 ${
-                isDarkMode ? 'text-gray-300' : 'text-gray-700'
-              }`}>
-                Total Nitrogen (%)
-              </label>
-              <input
-                type="number"
-                step="0.01"
-                value={formData.nitrogen}
-                onChange={(e) => handleInputChange('nitrogen', e.target.value)}
-                className={`w-full px-3 py-2 rounded-lg border transition-colors ${
-                  isDarkMode 
-                    ? 'bg-gray-700 border-gray-600 text-white focus:border-green-500' 
-                    : 'bg-white border-gray-300 text-gray-900 focus:border-green-500'
-                } focus:outline-none focus:ring-2 focus:ring-green-500/20`}
-              />
-            </div>
-            <div>
-              <label className={`block text-sm font-medium mb-1 ${
-                isDarkMode ? 'text-gray-300' : 'text-gray-700'
-              }`}>
-                Organic Carbon (%)
-              </label>
-              <input
-                type="number"
-                step="0.01"
-                value={formData.organicCarbon}
-                onChange={(e) => handleInputChange('organicCarbon', e.target.value)}
-                className={`w-full px-3 py-2 rounded-lg border transition-colors ${
-                  isDarkMode 
-                    ? 'bg-gray-700 border-gray-600 text-white focus:border-green-500' 
-                    : 'bg-white border-gray-300 text-gray-900 focus:border-green-500'
-                } focus:outline-none focus:ring-2 focus:ring-green-500/20`}
-              />
-            </div>
-            <div className="col-span-2">
-              <label className={`block text-sm font-medium mb-1 ${
-                isDarkMode ? 'text-gray-300' : 'text-gray-700'
-              }`}>
-                Cation Exchange Capacity (cmol/kg)
-              </label>
-              <input
-                type="number"
-                step="0.1"
-                value={formData.cationExchange}
-                onChange={(e) => handleInputChange('cationExchange', e.target.value)}
-                className={`w-full px-3 py-2 rounded-lg border transition-colors ${
-                  isDarkMode 
-                    ? 'bg-gray-700 border-gray-600 text-white focus:border-green-500' 
-                    : 'bg-white border-gray-300 text-gray-900 focus:border-green-500'
-                } focus:outline-none focus:ring-2 focus:ring-green-500/20`}
-              />
-            </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className={`block text-sm font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Temparature (°C)</label>
+            <input type="number" step="0.1" value={formData.Temparature} onChange={e => handleInputChange('Temparature', e.target.value)} className={`w-full px-3 py-2 rounded-lg border transition-colors ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white focus:border-green-500' : 'bg-white border-gray-300 text-gray-900 focus:border-green-500'} focus:outline-none focus:ring-2 focus:ring-green-500/20`} />
+          </div>
+          <div>
+            <label className={`block text-sm font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Humidity (%)</label>
+            <input type="number" step="0.1" value={formData.Humidity} onChange={e => handleInputChange('Humidity', e.target.value)} className={`w-full px-3 py-2 rounded-lg border transition-colors ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white focus:border-green-500' : 'bg-white border-gray-300 text-gray-900 focus:border-green-500'} focus:outline-none focus:ring-2 focus:ring-green-500/20`} />
+          </div>
+          <div>
+            <label className={`block text-sm font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Moisture (%)</label>
+            <input type="number" step="0.1" value={formData.Moisture} onChange={e => handleInputChange('Moisture', e.target.value)} className={`w-full px-3 py-2 rounded-lg border transition-colors ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white focus:border-green-500' : 'bg-white border-gray-300 text-gray-900 focus:border-green-500'} focus:outline-none focus:ring-2 focus:ring-green-500/20`} />
+          </div>
+          <div>
+            <label className={`block text-sm font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Soil Type</label>
+            <select value={formData.Soil_Type} onChange={e => handleInputChange('Soil_Type', e.target.value)} className={`w-full px-3 py-2 rounded-lg border transition-colors ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white focus:border-green-500' : 'bg-white border-gray-300 text-gray-900 focus:border-green-500'} focus:outline-none focus:ring-2 focus:ring-green-500/20`}>
+              {soilTypeOptions.map(option => (
+                <option key={option.value} value={option.value}>{option.label}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className={`block text-sm font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Crop Type</label>
+            <select value={formData.Crop_Type} onChange={e => handleInputChange('Crop_Type', e.target.value)} className={`w-full px-3 py-2 rounded-lg border transition-colors ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white focus:border-green-500' : 'bg-white border-gray-300 text-gray-900 focus:border-green-500'} focus:outline-none focus:ring-2 focus:ring-green-500/20`}>
+              {cropTypeOptions.map(option => (
+                <option key={option.value} value={option.value}>{option.label}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className={`block text-sm font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Nitrogen (%)</label>
+            <input type="number" step="0.01" value={formData.Nitrogen} onChange={e => handleInputChange('Nitrogen', e.target.value)} className={`w-full px-3 py-2 rounded-lg border transition-colors ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white focus:border-green-500' : 'bg-white border-gray-300 text-gray-900 focus:border-green-500'} focus:outline-none focus:ring-2 focus:ring-green-500/20`} />
+          </div>
+          <div>
+            <label className={`block text-sm font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Potassium (ppm)</label>
+            <input type="number" step="0.1" value={formData.Potassium} onChange={e => handleInputChange('Potassium', e.target.value)} className={`w-full px-3 py-2 rounded-lg border transition-colors ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white focus:border-green-500' : 'bg-white border-gray-300 text-gray-900 focus:border-green-500'} focus:outline-none focus:ring-2 focus:ring-green-500/20`} />
+          </div>
+          <div>
+            <label className={`block text-sm font-medium mb-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Phosphorous (ppm)</label>
+            <input type="number" step="0.1" value={formData.Phosphorous} onChange={e => handleInputChange('Phosphorous', e.target.value)} className={`w-full px-3 py-2 rounded-lg border transition-colors ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white focus:border-green-500' : 'bg-white border-gray-300 text-gray-900 focus:border-green-500'} focus:outline-none focus:ring-2 focus:ring-green-500/20`} />
           </div>
         </div>
-
-        {/* Soil Texture */}
-        <div>
-          <h4 className="font-medium mb-3 flex items-center space-x-2">
-            <Mountain className="h-4 w-4 text-green-600" />
-            <span>Soil Texture</span>
-          </h4>
-          <div className="grid grid-cols-3 gap-4">
-            <div>
-              <label className={`block text-sm font-medium mb-1 ${
-                isDarkMode ? 'text-gray-300' : 'text-gray-700'
-              }`}>
-                Sand (%)
-              </label>
-              <input
-                type="number"
-                step="0.1"
-                value={formData.sandPercent}
-                onChange={(e) => handleInputChange('sandPercent', e.target.value)}
-                className={`w-full px-3 py-2 rounded-lg border transition-colors ${
-                  isDarkMode 
-                    ? 'bg-gray-700 border-gray-600 text-white focus:border-green-500' 
-                    : 'bg-white border-gray-300 text-gray-900 focus:border-green-500'
-                } focus:outline-none focus:ring-2 focus:ring-green-500/20`}
-              />
-            </div>
-            <div>
-              <label className={`block text-sm font-medium mb-1 ${
-                isDarkMode ? 'text-gray-300' : 'text-gray-700'
-              }`}>
-                Clay (%)
-              </label>
-              <input
-                type="number"
-                step="0.1"
-                value={formData.clayPercent}
-                onChange={(e) => handleInputChange('clayPercent', e.target.value)}
-                className={`w-full px-3 py-2 rounded-lg border transition-colors ${
-                  isDarkMode 
-                    ? 'bg-gray-700 border-gray-600 text-white focus:border-green-500' 
-                    : 'bg-white border-gray-300 text-gray-900 focus:border-green-500'
-                } focus:outline-none focus:ring-2 focus:ring-green-500/20`}
-              />
-            </div>
-            <div>
-              <label className={`block text-sm font-medium mb-1 ${
-                isDarkMode ? 'text-gray-300' : 'text-gray-700'
-              }`}>
-                Silt (%)
-              </label>
-              <input
-                type="number"
-                step="0.1"
-                value={formData.siltPercent}
-                onChange={(e) => handleInputChange('siltPercent', e.target.value)}
-                className={`w-full px-3 py-2 rounded-lg border transition-colors ${
-                  isDarkMode 
-                    ? 'bg-gray-700 border-gray-600 text-white focus:border-green-500' 
-                    : 'bg-white border-gray-300 text-gray-900 focus:border-green-500'
-                } focus:outline-none focus:ring-2 focus:ring-green-500/20`}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Environmental Factors */}
-        <div>
-          <h4 className="font-medium mb-3 flex items-center space-x-2">
-            <Droplets className="h-4 w-4 text-green-600" />
-            <span>Environmental Factors</span>
-          </h4>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className={`block text-sm font-medium mb-1 ${
-                isDarkMode ? 'text-gray-300' : 'text-gray-700'
-              }`}>
-                Annual Rainfall (mm)
-              </label>
-              <input
-                type="number"
-                value={formData.rainfall}
-                onChange={(e) => handleInputChange('rainfall', e.target.value)}
-                className={`w-full px-3 py-2 rounded-lg border transition-colors ${
-                  isDarkMode 
-                    ? 'bg-gray-700 border-gray-600 text-white focus:border-green-500' 
-                    : 'bg-white border-gray-300 text-gray-900 focus:border-green-500'
-                } focus:outline-none focus:ring-2 focus:ring-green-500/20`}
-              />
-            </div>
-            <div>
-              <label className={`block text-sm font-medium mb-1 ${
-                isDarkMode ? 'text-gray-300' : 'text-gray-700'
-              }`}>
-                Elevation (m)
-              </label>
-              <input
-                type="number"
-                value={formData.elevation}
-                onChange={(e) => handleInputChange('elevation', e.target.value)}
-                className={`w-full px-3 py-2 rounded-lg border transition-colors ${
-                  isDarkMode 
-                    ? 'bg-gray-700 border-gray-600 text-white focus:border-green-500' 
-                    : 'bg-white border-gray-300 text-gray-900 focus:border-green-500'
-                } focus:outline-none focus:ring-2 focus:ring-green-500/20`}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Crop Selection */}
-        <div>
-          <h4 className="font-medium mb-3 flex items-center space-x-2">
-            <Wheat className="h-4 w-4 text-green-600" />
-            <span>Crop Type</span>
-          </h4>
-          <select
-            value={formData.cropType}
-            onChange={(e) => handleInputChange('cropType', e.target.value)}
-            className={`w-full px-3 py-2 rounded-lg border transition-colors ${
-              isDarkMode 
-                ? 'bg-gray-700 border-gray-600 text-white focus:border-green-500' 
-                : 'bg-white border-gray-300 text-gray-900 focus:border-green-500'
-            } focus:outline-none focus:ring-2 focus:ring-green-500/20`}
-          >
-            {cropOptions.map(option => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium py-3 px-4 rounded-lg transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-500/20 flex items-center justify-center space-x-2"
-        >
+        <button type="submit" disabled={loading} className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium py-3 px-4 rounded-lg transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-500/20 flex items-center justify-center space-x-2">
           {loading ? (
             <>
               <Loader className="h-4 w-4 animate-spin" />

@@ -1,4 +1,4 @@
-import { supabase, isDemoMode } from '../lib/supabase';
+import { supabase } from '../lib/supabase';
 
 export interface NewsArticle {
   id: string;
@@ -17,10 +17,6 @@ export interface NewsArticle {
 class NewsService {
   // Get latest news articles
   async getLatestNews(limit: number = 20, category?: string): Promise<NewsArticle[]> {
-    if (isDemoMode) {
-      return this.getDemoNews().slice(0, limit);
-    }
-
     try {
       // Try to get from Supabase Edge Function first
       const { data, error } = await supabase.functions.invoke('news-feed', {
@@ -77,11 +73,6 @@ class NewsService {
 
   // Cache news articles locally
   async cacheNews(articles: NewsArticle[]): Promise<void> {
-    if (isDemoMode) {
-      localStorage.setItem('cached_news', JSON.stringify(articles));
-      return;
-    }
-
     try {
       const { error } = await supabase
         .from('news_articles')
@@ -109,11 +100,6 @@ class NewsService {
 
   // Get cached news (fallback)
   async getCachedNews(limit: number = 20): Promise<NewsArticle[]> {
-    if (isDemoMode) {
-      const cached = localStorage.getItem('cached_news');
-      return cached ? JSON.parse(cached).slice(0, limit) : this.getDemoNews().slice(0, limit);
-    }
-
     try {
       const { data, error } = await supabase
         .from('news_articles')

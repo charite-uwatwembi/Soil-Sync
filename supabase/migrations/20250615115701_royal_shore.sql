@@ -1,3 +1,4 @@
+
 /*
   # Create users table
 

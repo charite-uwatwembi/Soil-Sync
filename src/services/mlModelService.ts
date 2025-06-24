@@ -1,27 +1,17 @@
-import { supabase, isDemoMode } from '../lib/supabase';
+import type { SoilModelInput } from '../components/SoilForm';
+import { supabase } from '../lib/supabase';
 
-export interface MLModelInput {
-  phosphorus: number;
-  potassium: number;
-  nitrogen: number;
-  organicCarbon: number;
-  cationExchange: number;
-  sandPercent: number;
-  clayPercent: number;
-  siltPercent: number;
-  rainfall: number;
-  elevation: number;
-  cropType: string;
-}
+export interface MLModelInput extends SoilModelInput {}
 
 export interface MLModelOutput {
   fertilizer: string;
-  applicationRate: number;
-  confidenceScore: number;
-  expectedYieldIncrease: number;
-  modelVersion: string;
-  predictionId: string;
-  processingTime: number;
+  applicationRate: number | string;
+  confidenceScore: number | string;
+  expectedYieldIncrease: number | string;
+  cropName?: string;
+  modelVersion?: string;
+  predictionId?: string;
+  processingTime?: number;
 }
 
 export interface ModelInfo {
@@ -42,11 +32,9 @@ class MLModelService {
 
   constructor() {
     // Use your deployed ML model server
-    this.modelEndpoint = isDemoMode 
-      ? 'http://localhost:8000/predict' 
-      : `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ml-model-server/predict`;
+    this.modelEndpoint = 'http://localhost:8000/predict';
     
-    this.apiKey = import.meta.env.VITE_ML_MODEL_API_KEY || 'demo-key';
+    this.apiKey = 'demo-key';
   }
 
   // Main prediction method using your actual joblib model
@@ -54,20 +42,16 @@ class MLModelService {
     const startTime = Date.now();
     
     try {
-      if (isDemoMode) {
-        // In demo mode, try local server first, then fallback
-        return await this.callLocalMLServer(input, startTime);
-      }
-
       // Production: Use Supabase Edge Function that calls your deployed model
       const prediction = await this.callProductionMLModel(input);
       const processingTime = Date.now() - startTime;
 
       const result: MLModelOutput = {
-        fertilizer: prediction.fertilizer,
+        fertilizer: prediction.fertilizer_name || prediction.fertilizer,
         applicationRate: prediction.application_rate,
-        confidenceScore: prediction.confidence_score,
+        confidenceScore: prediction.confidence,
         expectedYieldIncrease: prediction.expected_yield_increase,
+        cropName: prediction.crop_name,
         modelVersion: prediction.model_version,
         predictionId: prediction.prediction_id || crypto.randomUUID(),
         processingTime
@@ -82,56 +66,10 @@ class MLModelService {
       
       if (this.fallbackEnabled) {
         console.log('Using enhanced fallback prediction model');
-        return this.enhancedFallbackPrediction(input, startTime);
+        return this.enhancedFallbackPrediction(input, Date.now());
       }
       
       throw new Error('ML model prediction failed and fallback is disabled');
-    }
-  }
-
-  // Call local ML server (for development/demo)
-  private async callLocalMLServer(input: MLModelInput, startTime: number): Promise<MLModelOutput> {
-    try {
-      const response = await fetch('http://localhost:8000/predict', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.apiKey}`,
-        },
-        body: JSON.stringify({
-          phosphorus: input.phosphorus,
-          potassium: input.potassium,
-          nitrogen: input.nitrogen,
-          organic_carbon: input.organicCarbon,
-          cation_exchange: input.cationExchange,
-          sand_percent: input.sandPercent,
-          clay_percent: input.clayPercent,
-          silt_percent: input.siltPercent,
-          rainfall: input.rainfall,
-          elevation: input.elevation,
-          crop_type: input.cropType
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`Local ML server error: ${response.status}`);
-      }
-
-      const prediction = await response.json();
-      const processingTime = Date.now() - startTime;
-
-      return {
-        fertilizer: prediction.fertilizer,
-        applicationRate: prediction.application_rate,
-        confidenceScore: prediction.confidence_score,
-        expectedYieldIncrease: prediction.expected_yield_increase,
-        modelVersion: prediction.model_version,
-        predictionId: crypto.randomUUID(),
-        processingTime
-      };
-    } catch (error) {
-      console.error('Local ML server failed, using fallback:', error);
-      return this.enhancedFallbackPrediction(input, startTime);
     }
   }
 
@@ -139,17 +77,14 @@ class MLModelService {
   private async callProductionMLModel(input: MLModelInput): Promise<any> {
     const { data, error } = await supabase.functions.invoke('ml-model-server', {
       body: {
-        phosphorus: input.phosphorus,
-        potassium: input.potassium,
-        nitrogen: input.nitrogen,
-        organic_carbon: input.organicCarbon,
-        cation_exchange: input.cationExchange,
-        sand_percent: input.sandPercent,
-        clay_percent: input.clayPercent,
-        silt_percent: input.siltPercent,
-        rainfall: input.rainfall,
-        elevation: input.elevation,
-        crop_type: input.cropType
+        Temparature: input.Temparature,
+        Humidity: input.Humidity,
+        Moisture: input.Moisture,
+        Soil_Type: input.Soil_Type,
+        Crop_Type: input.Crop_Type,
+        Nitrogen: input.Nitrogen,
+        Potassium: input.Potassium,
+        Phosphorous: input.Phosphorous
       }
     });
 
@@ -162,35 +97,39 @@ class MLModelService {
 
   // Enhanced fallback prediction with improved logic
   private enhancedFallbackPrediction(input: MLModelInput, startTime: number): MLModelOutput {
-    const { phosphorus, potassium, nitrogen, organicCarbon, cationExchange, cropType } = input;
+    const { Phosphorous, Potassium, Nitrogen, Crop_Type } = input;
     
+    // Default values for fields not in the new model
+    const organicCarbon = 2.0;
+    const cationExchange = 15;
+
     let fertilizer = "NPK 17-17-17";
     let rate = 150;
     let confidence = 85;
     let expectedYield = 15;
 
     // Enhanced decision logic based on soil science
-    if (nitrogen < 0.15) {
+    if (Nitrogen < 0.15) {
       fertilizer = "Urea";
       rate = 120;
       confidence = 94;
       expectedYield = 25;
-    } else if (nitrogen < 0.25 && phosphorus < 12) {
+    } else if (Nitrogen < 0.25 && Phosphorous < 12) {
       fertilizer = "DAP (Diammonium Phosphate)";
       rate = 110;
       confidence = 91;
       expectedYield = 22;
-    } else if (phosphorus < 10) {
+    } else if (Phosphorous < 10) {
       fertilizer = "TSP (Triple Super Phosphate)";
       rate = 100;
       confidence = 89;
       expectedYield = 20;
-    } else if (potassium < 80) {
+    } else if (Potassium < 80) {
       fertilizer = "NPK 15-15-15";
       rate = 140;
       confidence = 87;
       expectedYield = 18;
-    } else if (potassium < 120 && nitrogen > 0.3) {
+    } else if (Potassium < 120 && Nitrogen > 0.3) {
       fertilizer = "NPK 20-10-10";
       rate = 130;
       confidence = 90;
@@ -216,11 +155,11 @@ class MLModelService {
     }
 
     // Crop-specific adjustments
-    switch (cropType.toLowerCase()) {
+    switch (Crop_Type.toLowerCase()) {
       case 'rice':
         rate *= 1.25;
         expectedYield += 8;
-        if (nitrogen < 0.2) {
+        if (Nitrogen < 0.2) {
           fertilizer = "Urea + NPK 15-15-15 (Split Application)";
           confidence += 5;
         }
@@ -228,7 +167,7 @@ class MLModelService {
       case 'maize':
         rate *= 1.1;
         expectedYield += 5;
-        if (nitrogen < 0.25) {
+        if (Nitrogen < 0.25) {
           fertilizer = "NPK 23-10-5";
           confidence += 3;
         }
@@ -241,7 +180,7 @@ class MLModelService {
         break;
       case 'potato':
         rate *= 1.15;
-        if (potassium < 150) {
+        if (Potassium < 150) {
           fertilizer = "NPK 15-15-20";
           confidence += 4;
         }
@@ -284,19 +223,6 @@ class MLModelService {
 
   // Log prediction for analytics
   private async logPrediction(input: MLModelInput, output: MLModelOutput): Promise<void> {
-    if (isDemoMode) {
-      // Store in local storage for demo
-      const predictions = JSON.parse(localStorage.getItem('ml_predictions') || '[]');
-      predictions.unshift({
-        id: output.predictionId,
-        timestamp: new Date().toISOString(),
-        input,
-        output
-      });
-      localStorage.setItem('ml_predictions', JSON.stringify(predictions.slice(0, 100)));
-      return;
-    }
-
     try {
       const { data: { user } } = await supabase.auth.getUser();
       
@@ -326,9 +252,7 @@ class MLModelService {
     const startTime = Date.now();
     
     try {
-      const endpoint = isDemoMode 
-        ? 'http://localhost:8000/health'
-        : `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ml-model-server/health`;
+      const endpoint = 'http://localhost:8000/health';
 
       const response = await fetch(endpoint);
       const health = await response.json();
@@ -380,17 +304,6 @@ class MLModelService {
 
   // Get prediction analytics
   async getPredictionAnalytics(days: number = 30): Promise<any> {
-    if (isDemoMode) {
-      const predictions = JSON.parse(localStorage.getItem('ml_predictions') || '[]');
-      return {
-        totalPredictions: predictions.length,
-        averageConfidence: predictions.reduce((sum: number, p: any) => sum + p.output.confidenceScore, 0) / predictions.length || 0,
-        averageProcessingTime: predictions.reduce((sum: number, p: any) => sum + p.output.processingTime, 0) / predictions.length || 0,
-        cropDistribution: this.calculateCropDistribution(predictions),
-        confidenceDistribution: this.calculateConfidenceDistribution(predictions)
-      };
-    }
-
     try {
       const { data, error } = await supabase
         .from('ml_predictions')
