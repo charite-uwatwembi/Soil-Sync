@@ -47,8 +47,8 @@ function App() {
   useEffect(() => {
     const initAuth = async () => {
       try {
-        const currentUser = await authService.getCurrentUser();
-        setUser(currentUser);
+          const currentUser = await authService.getCurrentUser();
+          setUser(currentUser);
         if (currentUser) {
           loadUserData();
         }
@@ -57,18 +57,18 @@ function App() {
       }
     };
     initAuth();
-    const { data: { subscription } } = authService.onAuthStateChange((user) => {
-      setUser(user);
-      if (user) {
-        loadUserData();
-      } else {
-        setHistoryData([]);
-        setChartData([]);
-      }
-    });
-    return () => {
-      subscription?.unsubscribe();
-    };
+      const { data: { subscription } } = authService.onAuthStateChange((user) => {
+        setUser(user);
+        if (user) {
+          loadUserData();
+        } else {
+          setHistoryData([]);
+          setChartData([]);
+        }
+      });
+      return () => {
+        subscription?.unsubscribe();
+      };
   }, []);
 
   // Load user's historical data
@@ -144,7 +144,7 @@ function App() {
 
   const handleSignOut = async () => {
     try {
-      await authService.signOut();
+        await authService.signOut();
     } catch (error) {
       console.error('Sign out failed:', error);
     }
@@ -204,60 +204,60 @@ function App() {
             />
           ) : (
             activePage === 'Dashboard' ? (
-              <div className="space-y-6">
-                {/* Top Row - Current Recommendation */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  <div className="lg:col-span-2">
-                    <RecommendationCard 
-                      isDarkMode={isDarkMode}
-                      recommendation={currentRecommendation}
-                    />
-                  </div>
-                  <div>
-                    <SoilForm 
-                      isDarkMode={isDarkMode}
-                      onSubmit={handleSoilSubmit}
-                      loading={loading}
-                    />
-                  </div>
-                </div>
-
-                {/* Middle Row - Soil Visualization */}
-                <div>
-                  <SoilVisualizationChart 
+            <div className="space-y-6">
+              {/* Top Row - Current Recommendation */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2">
+                  <RecommendationCard 
                     isDarkMode={isDarkMode}
-                    soilData={currentSoilData}
                     recommendation={currentRecommendation}
                   />
                 </div>
-
-                {/* Third Row - Chart and News */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  <div className="lg:col-span-2">
-                    <RecommendationChart 
-                      isDarkMode={isDarkMode}
-                      data={chartData}
-                    />
-                  </div>
-                  <div>
-                    <AgriNews isDarkMode={isDarkMode} />
-                  </div>
-                </div>
-
-                {/* Bottom Row - Data Table */}
                 <div>
-                  <DataTable 
+                  <SoilForm 
                     isDarkMode={isDarkMode}
-                    data={historyData}
+                    onSubmit={handleSoilSubmit}
+                    loading={loading}
                   />
                 </div>
               </div>
-            ) : (
-              <NavigationPages 
-                isDarkMode={isDarkMode} 
-                activePage={activePage}
-                onSensorData={handleSensorData}
-              />
+
+              {/* Middle Row - Soil Visualization */}
+              <div>
+                <SoilVisualizationChart 
+                  isDarkMode={isDarkMode}
+                  soilData={currentSoilData}
+                  recommendation={currentRecommendation}
+                />
+              </div>
+
+              {/* Third Row - Chart and News */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2">
+                  <RecommendationChart 
+                    isDarkMode={isDarkMode}
+                    data={chartData}
+                  />
+                </div>
+                <div>
+                  <AgriNews isDarkMode={isDarkMode} />
+                </div>
+              </div>
+
+              {/* Bottom Row - Data Table */}
+              <div>
+                <DataTable 
+                  isDarkMode={isDarkMode}
+                  data={historyData}
+                />
+              </div>
+            </div>
+          ) : (
+            <NavigationPages 
+              isDarkMode={isDarkMode} 
+              activePage={activePage}
+              onSensorData={handleSensorData}
+            />
             )
           )}
         </div>

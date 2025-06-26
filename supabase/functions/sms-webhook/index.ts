@@ -1,4 +1,4 @@
-import { corsHeaders } from '../_shared/cors.ts';
+import { serve } from "https://deno.land/std/http/server.ts";
 
 interface SoilData {
   phosphorus: number;
@@ -156,8 +156,8 @@ async function sendSMS(to: string, message: string): Promise<boolean> {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${Deno.env.get('MTN_API_TOKEN')}`,
-        'X-API-Key': Deno.env.get('MTN_API_KEY') || '',
+        'Authorization': `Bearer ${process.env.MTN_API_TOKEN}`,
+        'X-API-Key': process.env.MTN_API_KEY || '',
       },
       body: JSON.stringify({
         from: 'SoilSync',
@@ -216,71 +216,55 @@ async function logSMSInteraction(from: string, message: string, response: string
   }
 }
 
-Deno.serve(async (req: Request) => {
-  // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
-    return new Response(null, {
-      status: 200,
-      headers: corsHeaders,
-    });
+serve(async (req) => {
+  if (req.method !== 'POST') {
+    return new Response('Method Not Allowed', { status: 405 })
   }
 
-  try {
-    const smsData: SMSRequest = await req.json();
-    
-    const { from, text } = smsData;
-    let responseMessage: string;
-    let success = false;
+  const formData = await req.formData()
+  const from = formData.get('From')
+  const body = formData.get('Body')
 
-    // Check for help request
-    if (text.trim().toUpperCase().includes('HELP')) {
-      responseMessage = getHelpMessage();
-      success = true;
-    } else {
-      // Try to parse soil data
-      const soilData = parseSoilDataFromSMS(text);
-      
-      if (soilData) {
-        // Generate fertilizer recommendation
-        responseMessage = predictFertilizerFromSMS(soilData);
-        success = true;
-      } else {
-        // Invalid format
-        responseMessage = `Invalid format. Send HELP for instructions.
-
-Example: SOIL 15 120 0.25 MAIZE
-
-SoilSync - Smart Agriculture`;
-        success = false;
-      }
-    }
-
-    // Send response SMS
-    const smsSent = await sendSMS(from, responseMessage);
-    
-    // Log the interaction
-    await logSMSInteraction(from, text, responseMessage, smsSent && success);
-
+  // Parse the SMS body
+  const match = /pH:(\d+\.?\d*)\s*,\s*N:(\d+)\s*,\s*P:(\d+)\s*,\s*K:(\d+)\s*,\s*crop:([a-zA-Z]+)/i.exec(body as string)
+  if (!match) {
     return new Response(
-      JSON.stringify({ 
-        success: smsSent,
-        message: 'SMS processed',
-        response: responseMessage 
-      }),
-      {
-        status: 200,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
-    );
-
-  } catch (error) {
-    console.error('SMS webhook error:', error);
-    return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
-    );
+      `<Response><Message>Invalid format. Please send: pH:6.5, N:20, P:10, K:15, crop:maize</Message></Response>`,
+      { headers: { 'Content-Type': 'application/xml' } }
+    )
   }
-});
+
+  const [, pH, N, P, K, crop] = match
+
+  // Call your ML API (update the URL to your actual endpoint)
+  const mlRes = await fetch('https://capstone-model-uypw.onrender.com/predict', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      pH: parseFloat(pH),
+      N: parseInt(N),
+      P: parseInt(P),
+      K: parseInt(K),
+      crop: crop.toLowerCase()
+    })
+  })
+
+  if (!mlRes.ok) {
+    return new Response(
+      `<Response><Message>Sorry, there was an error processing your request. Please try again later.</Message></Response>`,
+      { headers: { 'Content-Type': 'application/xml' } }
+    )
+  }
+
+  const prediction = await mlRes.json()
+
+  // Format the reply
+  const reply = `Fertilizer: ${prediction.fertilizer_name}
+Rate: ${prediction.application_rate}
+Yield: ${prediction.expected_yield_increase}`
+
+  return new Response(
+    `<Response><Message>${reply}</Message></Response>`,
+    { headers: { 'Content-Type': 'application/xml' } }
+  )
+})

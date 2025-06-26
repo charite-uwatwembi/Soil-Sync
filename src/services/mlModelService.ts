@@ -102,7 +102,7 @@ class MLModelService {
     // Default values for fields not in the new model
     const organicCarbon = 2.0;
     const cationExchange = 15;
-
+    
     let fertilizer = "NPK 17-17-17";
     let rate = 150;
     let confidence = 85;
