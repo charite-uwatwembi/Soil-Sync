@@ -31,7 +31,7 @@ class FertilizerModelServer:
 
     def load_model(self):
         try:
-            ml_models_dir = os.path.join(os.path.dirname(__file__), '..', 'ML_Models')
+            ml_models_dir = os.path.join(os.path.dirname(__file__), 'ML_Models')
             model_path = os.path.join(ml_models_dir, 'fertilizer.pkl')
             if not os.path.exists(model_path):
                 logger.error(f"Model file not found at {model_path}")
