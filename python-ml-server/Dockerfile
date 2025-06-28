@@ -12,6 +12,9 @@ COPY app.py .
 # Create directory for ML models
 RUN mkdir -p ML_Models
 
+# Copy ML models
+COPY ML_Models ./ML_Models
+
 # Expose port
 EXPOSE 8000
 

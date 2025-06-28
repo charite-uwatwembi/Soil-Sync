@@ -44,6 +44,7 @@ class FertilizerModelServer:
                 logger.error(f"Classifier file not found at {classifier_path}")
                 return False
             self.model = joblib.load(classifier_path)
+            print("Files in ML_Models:", os.listdir(ml_models_dir))
             logger.info(f"Successfully loaded model and label encoder from {ml_models_dir}")
             return True
         except Exception as e:
