@@ -17,22 +17,7 @@ export interface NewsArticle {
 class NewsService {
   // Get latest news articles
   async getLatestNews(limit: number = 20, category?: string): Promise<NewsArticle[]> {
-    try {
-      // Try to get from Supabase Edge Function first
-      const { data, error } = await supabase.functions.invoke('news-feed', {
-        body: { limit, category }
-      });
-
-      if (error) {
-        console.error('News feed error:', error);
-        return this.getDemoNews().slice(0, limit);
-      }
-
-      return data.articles.map(this.transformNewsArticle);
-    } catch (error) {
-      console.error('Failed to fetch news:', error);
-      return this.getDemoNews().slice(0, limit);
-    }
+    return this.getDemoNews().slice(0, limit);
   }
 
   // Get news by category
@@ -159,7 +144,7 @@ class NewsService {
         category: "Government",
         tags: ["smart-agriculture", "rwanda", "technology", "yields"],
         source: "Ministry of Agriculture",
-        url: "#"
+        url: "https://farmonaut.com/africa/rwandas-agricultural-revolution-how-ai-and-iot-are-shaping-sustainable-agri-food-systems"
       },
       {
         id: '2',
@@ -172,7 +157,7 @@ class NewsService {
         category: "Education",
         tags: ["soil-health", "farming", "sustainability", "best-practices"],
         source: "Rwanda Agriculture Board",
-        url: "#"
+        url: "https://farmersreviewafrica.com/rwanda-soil-information-system-rwasis-launched-to-revolutionize-agricultural-productivity/?"
       },
       {
         id: '3',
@@ -185,7 +170,7 @@ class NewsService {
         category: "Research",
         tags: ["climate-smart", "fertilizer", "adaptation", "precision-agriculture"],
         source: "CGIAR Research",
-        url: "#"
+        url: "https://www.cgiar.org/news-events/news/rwandas-digital-revolution-in-agriculture-challenges-and-progress-in-smart-fertilizer-management/?"
       },
       {
         id: '4',
@@ -198,7 +183,7 @@ class NewsService {
         category: "Technology",
         tags: ["digital-agriculture", "mobile", "innovation", "east-africa"],
         source: "Tech4Agriculture",
-        url: "#"
+        url: "https://rwandatechnews.com/revolutionising-rwandas-agriculture-through-technology/?"
       },
       {
         id: '5',
@@ -211,7 +196,7 @@ class NewsService {
         category: "Sustainability",
         tags: ["sustainable-farming", "productivity", "environment", "income"],
         source: "Rwanda Farmers Federation",
-        url: "#"
+        url: ""
       },
       {
         id: '6',
@@ -224,7 +209,7 @@ class NewsService {
         category: "Technology",
         tags: ["iot", "sensors", "monitoring", "data-driven"],
         source: "Rwanda ICT Chamber",
-        url: "#"
+        url: "https://www.afrodiscovery.com/country/rwanda/rwanda-agriculture/sustainable-farming-practices-in-rwanda-enhancing-resilience-and-food-security/?"
       }
     ];
   }

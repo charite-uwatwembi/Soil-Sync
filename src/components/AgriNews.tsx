@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { ExternalLink, Calendar, User, Search, Filter, RefreshCw } from 'lucide-react';
+import { Calendar, ExternalLink, Filter, RefreshCw, Search, User } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 import { newsService, type NewsArticle } from '../services/newsService';
 
 interface AgriNewsProps {
@@ -12,6 +12,7 @@ const AgriNews: React.FC<AgriNewsProps> = ({ isDarkMode }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [selectedArticle, setSelectedArticle] = useState<NewsArticle | null>(null);
 
   const categories = [
     { value: 'all', label: 'All News' },
@@ -177,6 +178,14 @@ const AgriNews: React.FC<AgriNewsProps> = ({ isDarkMode }) => {
               className={`group cursor-pointer transition-all duration-200 hover:scale-105 ${
                 isDarkMode ? 'hover:bg-gray-700/50' : 'hover:bg-gray-50'
               } p-4 rounded-lg`}
+              onClick={() => {
+                console.log('Card clicked', article.url);
+                if (article.url && article.url !== '#') {
+                  window.open(article.url, '_blank', 'noopener,noreferrer');
+                } else {
+                  setSelectedArticle(article);
+                }
+              }}
             >
               <div className="flex space-x-4">
                 <div className="flex-shrink-0">

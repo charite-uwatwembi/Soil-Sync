@@ -32,7 +32,7 @@ class MLModelService {
 
   constructor() {
     // Use your deployed ML model server
-    this.modelEndpoint = 'http://localhost:8000/predict';
+    this.modelEndpoint = 'https://soil-sync-nq0s.onrender.com/predict';
     
     this.apiKey = 'demo-key';
   }
@@ -252,7 +252,7 @@ class MLModelService {
     const startTime = Date.now();
     
     try {
-      const endpoint = 'http://localhost:8000/health';
+      const endpoint = 'https://soil-sync-nq0s.onrender.com/health';
 
       const response = await fetch(endpoint);
       const health = await response.json();
