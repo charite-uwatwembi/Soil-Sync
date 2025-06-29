@@ -1,5 +1,5 @@
+import { AlertCircle, Lock, Mail, User, X } from 'lucide-react';
 import React, { useState } from 'react';
-import { X, Mail, Lock, User, AlertCircle } from 'lucide-react';
 import { authService } from '../services/authService';
 
 interface AuthModalProps {
