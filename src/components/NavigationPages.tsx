@@ -1,21 +1,17 @@
-import React from 'react';
-import { 
-  BarChart3, 
-  Sprout, 
-  Database, 
-  TrendingUp, 
-  FileText, 
-  Bell, 
-  Settings, 
+import {
+  BarChart3,
+  Bell,
+  Database,
+  FileText,
   HelpCircle,
-  Users,
-  MapPin,
-  Calendar,
-  DollarSign
+  Settings,
+  Sprout,
+  TrendingUp
 } from 'lucide-react';
+import React from 'react';
 import IoTSimulator from './IoTSimulator';
-import SMSService from './SMSService';
 import MLModelIntegration from './MLModelIntegration';
+import SMSService from './SMSService';
 
 interface NavigationPagesProps {
   isDarkMode: boolean;
@@ -89,6 +85,10 @@ const CropsPage: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }) => (
       <h2 className="text-2xl font-bold">Crop Management</h2>
     </div>
     
+    <p className={`mb-4 text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+      These are the main crops managed in your region. Monitoring their status helps optimize yield and resource use.
+    </p>
+
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {[
         { name: 'Maize', area: '45 ha', status: 'Growing', yield: '8.2 t/ha', image: 'https://images.pexels.com/photos/2132227/pexels-photo-2132227.jpeg?auto=compress&cs=tinysrgb&w=400' },

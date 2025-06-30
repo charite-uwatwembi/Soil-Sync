@@ -170,132 +170,129 @@ function App() {
     <div className={`min-h-screen transition-colors duration-300 ${
       isDarkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'
     }`}>
-      <Sidebar 
-        isCollapsed={isCollapsed} 
-        isDarkMode={isDarkMode} 
-        user={user}
-        activePage={activePage}
-        onPageChange={setActivePage}
-      />
-      <TopBar 
-        isCollapsed={isCollapsed}
-        setIsCollapsed={setIsCollapsed}
-        isDarkMode={isDarkMode}
-        toggleDarkMode={toggleDarkMode}
-        user={user}
-        onSignIn={() => setShowAuthModal(true)}
-        onSignOut={handleSignOut}
-      />
-      
-      <main className={`transition-all duration-300 ${
-        isCollapsed ? 'ml-16' : 'ml-64'
-      } mt-16 p-6`}>
-        <div className="max-w-7xl mx-auto">
-          {/* If not authenticated, show only AuthModal */}
-          {!user ? (
-            <AuthModal
-              isOpen={true}
-              onClose={() => {}}
-              onAuthSuccess={() => {
-                setShowAuthModal(false);
-                loadUserData();
-              }}
-              isDarkMode={isDarkMode}
-            />
-          ) : (
-            activePage === 'Dashboard' ? (
-            <div className="space-y-6">
-              {/* Top Row - Current Recommendation */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2">
-                  <RecommendationCard 
-                    isDarkMode={isDarkMode}
-                    recommendation={currentRecommendation}
-                  />
+      {/* If not authenticated, show only AuthModal full screen */}
+      {!user ? (
+        <AuthModal
+          isOpen={true}
+          onClose={() => {}}
+          onAuthSuccess={() => {
+            setShowAuthModal(false);
+            loadUserData();
+          }}
+          isDarkMode={isDarkMode}
+        />
+      ) : (
+        <>
+          <Sidebar 
+            isCollapsed={isCollapsed} 
+            isDarkMode={isDarkMode} 
+            user={user}
+            activePage={activePage}
+            onPageChange={setActivePage}
+          />
+          <TopBar 
+            isCollapsed={isCollapsed}
+            setIsCollapsed={setIsCollapsed}
+            isDarkMode={isDarkMode}
+            toggleDarkMode={toggleDarkMode}
+            user={user}
+            onSignIn={() => setShowAuthModal(true)}
+            onSignOut={handleSignOut}
+          />
+          <main className={`transition-all duration-300 ${
+            isCollapsed ? 'ml-16' : 'ml-64'
+          } mt-16 p-6`}>
+            <div className="max-w-7xl mx-auto">
+              {activePage === 'Dashboard' ? (
+                <div className="space-y-6">
+                  {/* Top Row - Current Recommendation */}
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div className="lg:col-span-2">
+                      <RecommendationCard 
+                        isDarkMode={isDarkMode}
+                        recommendation={currentRecommendation}
+                      />
+                    </div>
+                    <div>
+                      <SoilForm 
+                        isDarkMode={isDarkMode}
+                        onSubmit={handleSoilSubmit}
+                        loading={loading}
+                      />
+                    </div>
+                  </div>
+                  {/* Middle Row - Soil Visualization */}
+                  <div>
+                    <SoilVisualizationChart 
+                      isDarkMode={isDarkMode}
+                      soilData={currentSoilData}
+                      recommendation={currentRecommendation}
+                    />
+                  </div>
+                  {/* Third Row - Chart and News */}
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div className="lg:col-span-2">
+                      <RecommendationChart 
+                        isDarkMode={isDarkMode}
+                        data={chartData}
+                      />
+                    </div>
+                    <div>
+                      <AgriNews isDarkMode={isDarkMode} />
+                    </div>
+                  </div>
+                  {/* Bottom Row - Data Table */}
+                  <div>
+                    <DataTable 
+                      isDarkMode={isDarkMode}
+                      data={historyData}
+                    />
+                  </div>
                 </div>
-                <div>
-                  <SoilForm 
-                    isDarkMode={isDarkMode}
-                    onSubmit={handleSoilSubmit}
-                    loading={loading}
-                  />
-                </div>
-              </div>
-
-              {/* Middle Row - Soil Visualization */}
-              <div>
-                <SoilVisualizationChart 
-                  isDarkMode={isDarkMode}
-                  soilData={currentSoilData}
-                  recommendation={currentRecommendation}
+              ) : (
+                <NavigationPages 
+                  isDarkMode={isDarkMode} 
+                  activePage={activePage}
+                  onSensorData={handleSensorData}
                 />
-              </div>
-
-              {/* Third Row - Chart and News */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2">
-                  <RecommendationChart 
-                    isDarkMode={isDarkMode}
-                    data={chartData}
-                  />
+              )}
+            </div>
+          </main>
+          {/* Footer */}
+          <footer className={`${
+            isCollapsed ? 'ml-16' : 'ml-64'
+          } transition-all duration-300 ${
+            isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+          } border-t mt-12`}>
+            <div className="max-w-7xl mx-auto px-6 py-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-6">
+                  <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                    © 2024 SoilSync. Powered by AI for Smart Agriculture.
+                  </p>
                 </div>
-                <div>
-                  <AgriNews isDarkMode={isDarkMode} />
+                <div className="flex items-center space-x-4">
+                  <button className={`text-sm hover:text-green-600 transition-colors ${
+                    isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                  }`}>
+                    Privacy Policy
+                  </button>
+                  <button className={`text-sm hover:text-green-600 transition-colors ${
+                    isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                  }`}>
+                    Terms of Service
+                  </button>
+                  <button className={`text-sm hover:text-green-600 transition-colors ${
+                    isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                  }`}>
+                    Support
+                  </button>
                 </div>
               </div>
-
-              {/* Bottom Row - Data Table */}
-              <div>
-                <DataTable 
-                  isDarkMode={isDarkMode}
-                  data={historyData}
-                />
-              </div>
             </div>
-          ) : (
-            <NavigationPages 
-              isDarkMode={isDarkMode} 
-              activePage={activePage}
-              onSensorData={handleSensorData}
-            />
-            )
-          )}
-        </div>
-      </main>
-
-      {/* Footer */}
-      <footer className={`${
-        isCollapsed ? 'ml-16' : 'ml-64'
-      } transition-all duration-300 ${
-        isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
-      } border-t mt-12`}>
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-6">
-              <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                © 2024 SoilSync. Powered by AI for Smart Agriculture.
-              </p>
-            </div>
-            <div className="flex items-center space-x-4">
-              <button className={`text-sm hover:text-green-600 transition-colors ${
-                isDarkMode ? 'text-gray-400' : 'text-gray-600'
-              }`}>
-                Privacy Policy
-              </button>
-              <button className={`text-sm hover:text-green-600 transition-colors ${
-                isDarkMode ? 'text-gray-400' : 'text-gray-600'
-              }`}>
-                Terms of Service
-              </button>
-              <button className={`text-sm hover:text-green-600 transition-colors ${
-                isDarkMode ? 'text-gray-400' : 'text-gray-600'
-              }`}>
-                Support
-              </button>
-            </div>
-          </div>
-        </div>
-      </footer>
+          </footer>
+        </>
+      )}
     </div>
   );
 }
