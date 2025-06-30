@@ -235,7 +235,7 @@ const SoilVisualizationChart: React.FC<SoilVisualizationChartProps> = ({
               Recommended for {(recommendation.cropName || soilData.Crop_Type) && ((recommendation.cropName || soilData.Crop_Type).charAt(0).toUpperCase() + (recommendation.cropName || soilData.Crop_Type).slice(1))}
             </p>
             <p className="text-lg font-bold text-indigo-600">
-              {recommendation.fertilizer} at {recommendation.rate}
+              {recommendation.fertilizer} at {recommendation.rate} kg/ha
             </p>
           </div>
           <div className="text-right">
@@ -243,7 +243,7 @@ const SoilVisualizationChart: React.FC<SoilVisualizationChartProps> = ({
               Confidence
             </p>
             <p className="text-lg font-bold text-green-600">
-              {recommendation.confidence}
+              {recommendation.confidence} %
             </p>
           </div>
         </div>
