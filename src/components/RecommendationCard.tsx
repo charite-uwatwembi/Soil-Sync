@@ -74,7 +74,7 @@ const RecommendationCard: React.FC<RecommendationCardProps> = ({
             <TrendingUp className="h-4 w-4 text-blue-600" />
             <span className="text-sm font-medium text-blue-600">Rate</span>
           </div>
-          <p className="text-lg font-bold">{recommendation.rate}</p>
+          <p className="text-lg font-bold">{recommendation.rate} kg/ha</p>
         </div>
 
         {/* Confidence */}
@@ -85,7 +85,7 @@ const RecommendationCard: React.FC<RecommendationCardProps> = ({
             <Zap className="h-4 w-4 text-purple-600" />
             <span className="text-sm font-medium text-purple-600">Confidence</span>
           </div>
-          <p className="text-lg font-bold">{recommendation.confidence}</p>
+          <p className="text-lg font-bold">{recommendation.confidence} %</p>
         </div>
       </div>
 
@@ -100,7 +100,7 @@ const RecommendationCard: React.FC<RecommendationCardProps> = ({
             Expected Yield Increase
           </p>
           <p className="text-2xl font-bold text-green-600">
-            {recommendation.expectedYield}
+           + {recommendation.expectedYield} %
           </p>
         </div>
       </div>
