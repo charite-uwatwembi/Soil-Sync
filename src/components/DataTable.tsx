@@ -14,6 +14,26 @@ interface DataTableProps {
 }
 
 const DataTable: React.FC<DataTableProps> = ({ isDarkMode, data }) => {
+  const handleExportCSV = () => {
+    if (!data.length) return;
+    const header = ['Date', 'Crop', 'Fertilizer', 'Rate (kg/ha)', 'Confidence'];
+    const rows = data.map(row => [
+      row.date,
+      row.cropType,
+      row.fertilizer,
+      row.rate,
+      `${row.confidence}%`
+    ]);
+    const csvContent = [header, ...rows].map(e => e.join(',')).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'analysis_summary.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className={`p-6 rounded-xl border transition-all duration-200 hover:shadow-lg ${
       isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
@@ -30,9 +50,12 @@ const DataTable: React.FC<DataTableProps> = ({ isDarkMode, data }) => {
             </p>
           </div>
         </div>
-        <button className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-colors ${
-          isDarkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'
-        }`}>
+        <button
+          onClick={handleExportCSV}
+          className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-colors ${
+            isDarkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'
+          }`}
+        >
           <Download className="h-4 w-4" />
           <span className="text-sm font-medium">Export CSV</span>
         </button>
