@@ -17,7 +17,7 @@ SoilSync is a full-stack, AI-powered platform for real-time soil analysis, ferti
 
 ## 🏗️ Architecture
 
-![SoilSync Architecture](public/Untitled%20diagram%20_%20Mermaid%20Chart-2025-07-01-214456.svg)
+![SoilSync Architecture](public/Untitled%20diagram%20_%20Mermaid%20Chart-2025-07-01-215637.svg)
 
 ---
 
