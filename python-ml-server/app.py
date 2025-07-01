@@ -23,6 +23,9 @@ MODEL_COLUMNS = [
     'Nitrogen', 'Potassium', 'Phosphorous'
 ]
 
+soil_type_map = {'Sandy': 0, 'Clay': 1, 'Loamy': 2}
+crop_type_map = {'Wheat': 0, 'Rice': 1, 'Maize': 2}
+
 class FertilizerModelServer:
     def __init__(self):
         self.model = None
@@ -58,7 +61,27 @@ class FertilizerModelServer:
                 if col not in input_data:
                     raise ValueError(f"Missing required field: {col}")
             # Prepare DataFrame
-            features = [[input_data[col] for col in MODEL_COLUMNS]]
+            soil_type_str = input_data['Soil_Type']
+            crop_type_str = input_data['Crop_Type']
+
+            if soil_type_str not in soil_type_map:
+                raise ValueError(f"Invalid Soil_Type: {soil_type_str}. Allowed: {list(soil_type_map.keys())}")
+            if crop_type_str not in crop_type_map:
+                raise ValueError(f"Invalid Crop_Type: {crop_type_str}. Allowed: {list(crop_type_map.keys())}")
+
+            soil_type = soil_type_map[soil_type_str]
+            crop_type = crop_type_map[crop_type_str]
+
+            features = [[
+                input_data['Temparature'],
+                input_data['Humidity'],
+                input_data['Moisture'],
+                soil_type,
+                crop_type,
+                input_data['Nitrogen'],
+                input_data['Potassium'],
+                input_data['Phosphorous']
+            ]]
             df = pd.DataFrame(features, columns=MODEL_COLUMNS)
             # Predict
             pred_code = int(self.model.predict(df)[0])
