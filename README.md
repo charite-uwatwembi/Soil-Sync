@@ -17,18 +17,7 @@ SoilSync is a full-stack, AI-powered platform for real-time soil analysis, ferti
 
 ## 🏗️ Architecture
 
-```mermaid
-graph TD;
-  A[Farmer SMS/IoT] -->|SMS| B(Supabase Edge Function)
-  B -->|REST| C[Python ML Server (Flask)]
-  C -->|Prediction| B
-  B -->|Response| A
-  D[Web Dashboard (React)] -->|API| B
-  D -->|API| C
-  D -->|DB| E[Supabase DB]
-  B -->|DB| E
-  C -->|Model Files| F[ML_Models/]
-```
+![SoilSync Architecture](public/Untitled%20diagram%20_%20Mermaid%20Chart-2025-07-01-214456.svg)
 
 ---
 
