@@ -1,352 +1,207 @@
-# SoilSync - Smart Fertilizer Recommendation System
+# SoilSync - Smart Agriculture Platform
 
-A comprehensive agricultural platform that combines IoT sensors, machine learning, and SMS notifications to provide intelligent fertilizer recommendations to farmers.
-
-## 🌟 Features
-
-- **Smart Soil Analysis**: AI-powered fertilizer recommendations using your trained ML models
-- **IoT Integration**: Real-time sensor data collection and processing
-- **SMS Service**: Real SMS-based recommendations for farmers without internet
-- **Interactive Dashboard**: Real-time data visualization and analytics
-- **User Management**: Secure authentication and data storage
-- **Mobile Responsive**: Works on all devices
-
-## 🤖 ML Model Integration
-
-### Your Joblib Model
-SoilSync is designed to work with your pre-trained machine learning models stored in the `ML_Models` folder.
-
-**Supported Model Types:**
-- Scikit-learn models (joblib format)
-- Classification and regression models
-- Custom feature engineering pipelines
-
-**Model Requirements:**
-- Input features: phosphorus, potassium, nitrogen, organic_carbon, cation_exchange, sand_percent, clay_percent, silt_percent, rainfall, elevation, crop_type
-- Output: fertilizer recommendation, application rate, confidence score
-
-### Quick ML Model Deployment
-
-1. **Place your model**: Put your `.joblib` files in the `ML_Models` folder
-2. **Deploy the server**: Run `./deployment/deploy-ml-model.sh`
-3. **Test integration**: Use the ML Model Management interface in the dashboard
-
-```bash
-# Deploy your ML model
-cd deployment
-chmod +x deploy-ml-model.sh
-./deploy-ml-model.sh
-```
-
-## 📱 SMS Service for Farmers
-
-### How It Works
-Farmers can send SMS messages to get instant fertilizer recommendations without needing internet access.
-
-**SMS Number**: `+1 856 595 3915`
-
-### SMS Format
-
-Send an SMS in the following format:
-
-```
-Temp:25,Humidity:60,Moisture:30,Soil_Type:Sandy,Crop_Type:Wheat,N:50,P:30,K:20
-```
-
-- **All fields are required**
-- **Allowed Soil_Type:** Sandy, Clay, Loamy
-- **Allowed Crop_Type:** Wheat, Rice, Maize
-
-### Sample SMS Interactions:
-
-**Farmer sends**: `Temp:25,Humidity:60,Moisture:30,Soil_Type:Sandy,Crop_Type:Wheat,N:50,P:30,K:20`
-
-**System responds**:
-```
-SoilSync Recommendation:
-Crop: WHEAT
-Fertilizer: NPK 17-17-17
-Rate: 165kg/ha
-Expected yield increase: +20%
-Confidence: 87%
-
-For help: Reply HELP
-For more info: Call +1 856 595 3915
-```
-
-## 🚀 Quick Start Guide
-
-### Prerequisites
-
-- Node.js 18+ installed
-- Docker and Docker Compose (for ML model deployment)
-- Git installed
-- Visual Studio Code (recommended)
-- Supabase account (free)
-- MTN Rwanda API access (for SMS)
-
-### Step 1: Clone and Setup
-
-```bash
-# Clone the repository
-git clone <your-repo-url>
-cd soilsync-dashboard
-
-# Install dependencies
-npm install
-
-# Copy environment file
-cp .env.example .env
-```
-
-### Step 2: Configure Environment Variables
-
-Edit `.env` file with your credentials:
-
-```env
-# Supabase Configuration
-VITE_SUPABASE_URL=your_supabase_project_url
-VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-
-# ML Model Configuration
-VITE_ML_MODEL_ENDPOINT=http://localhost:8000/predict
-VITE_ML_MODEL_API_KEY=your_ml_api_key
-
-# SMS Configuration (MTN Rwanda)
-VITE_MTN_API_KEY=your_mtn_api_key
-VITE_MTN_API_SECRET=your_mtn_api_secret
-```
-
-### Step 3: Deploy Your ML Model
-
-```bash
-# Make sure your .joblib model files are in ML_Models folder
-ls ML_Models/
-
-# Deploy the ML model server
-cd deployment
-chmod +x deploy-ml-model.sh
-./deploy-ml-model.sh
-```
-
-### Step 4: Database Setup
-
-1. Create a Supabase project at [supabase.com](https://supabase.com)
-2. Run the migration files in your Supabase SQL editor
-3. Deploy the Edge Functions
-
-### Step 5: Run the Application
-
-```bash
-# Start development server
-npm run dev
-
-# Build for production
-npm run build
-```
-
-## 🤖 ML Model Architecture
-
-### Model Server Components
-
-1. **Flask API Server** (`python-ml-server/app.py`)
-   - Loads your joblib models automatically
-   - Provides REST API endpoints
-   - Handles feature preprocessing
-   - Returns structured predictions
-
-2. **Supabase Edge Function** (`supabase/functions/ml-model-server/`)
-   - Proxies requests to your ML server
-   - Handles authentication and logging
-   - Provides fallback predictions
-
-3. **Frontend Integration** (`src/services/mlModelService.ts`)
-   - Seamless integration with your models
-   - Automatic fallback to rule-based predictions
-   - Real-time health monitoring
-
-### Model Endpoints
-
-- **Health Check**: `GET /health`
-- **Prediction**: `POST /predict`
-- **Model Info**: `GET /model/info`
-- **Reload Model**: `POST /model/reload`
-
-### Example Prediction Request
-
-```json
-{
-  "phosphorus": 15,
-  "potassium": 120,
-  "nitrogen": 0.25,
-  "organic_carbon": 2.0,
-  "cation_exchange": 15,
-  "sand_percent": 40,
-  "clay_percent": 30,
-  "silt_percent": 30,
-  "rainfall": 1200,
-  "elevation": 1500,
-  "crop_type": "maize"
-}
-```
-
-### Example Prediction Response
-
-```json
-{
-  "fertilizer": "NPK 17-17-17",
-  "application_rate": 165,
-  "confidence_score": 87.3,
-  "expected_yield_increase": 20,
-  "model_version": "v1.0.0"
-}
-```
-
-## 📱 IoT Integration
-
-The system supports real-time sensor data through:
-- Simulated IoT devices for testing
-- Webhook endpoints for real sensor integration
-- Automatic data processing and recommendations
-
-## 📧 SMS Integration
-
-### Development/Testing
-- Built-in SMS simulator for testing
-- Mock SMS interactions
-- Local message history
-
-### Production Setup
-1. **Contact MTN Rwanda**: business@mtn.co.rw
-2. **Get SMS Gateway Access**: Request API credentials
-3. **Configure Webhook**: Set up SMS receiving endpoint
-4. **Deploy Edge Function**: Deploy the SMS webhook function
-
-## 🔧 Development
-
-```bash
-# Install dependencies
-npm install
-
-# Start development server
-npm run dev
-
-# Run tests
-npm test
-
-# Build for production
-npm run build
-
-# Deploy ML model
-./deployment/deploy-ml-model.sh
-```
-
-## 📦 Deployment
-
-### Frontend Deployment
-The application can be deployed to:
-- Vercel (recommended)
-- Netlify
-- Supabase (for backend functions)
-
-### ML Model Deployment
-- Local Docker container (development)
-- Cloud platforms (AWS, GCP, Azure)
-- Kubernetes clusters
-- Serverless functions
-
-### Deploy to Vercel
-```bash
-# Install Vercel CLI
-npm i -g vercel
-
-# Deploy
-vercel --prod
-```
-
-## 🛠️ ML Model Development Workflow
-
-1. **Train Your Model**
-   ```python
-   # Train your model using scikit-learn
-   from sklearn.ensemble import RandomForestClassifier
-   import joblib
-   
-   # Train model
-   model = RandomForestClassifier()
-   model.fit(X_train, y_train)
-   
-   # Save model
-   joblib.dump(model, 'ML_Models/fertilizer_model.joblib')
-   ```
-
-2. **Deploy to SoilSync**
-   ```bash
-   # Place model in ML_Models folder
-   cp your_model.joblib ML_Models/
-   
-   # Deploy
-   ./deployment/deploy-ml-model.sh
-   ```
-
-3. **Test Integration**
-   - Use the ML Model Management interface
-   - Test with sample data
-   - Monitor performance metrics
-
-4. **Monitor Performance**
-   - View prediction analytics
-   - Track model accuracy
-   - Monitor response times
-
-## 📊 Analytics & Monitoring
-
-- ML model performance tracking
-- SMS interaction logging
-- Farmer usage analytics
-- Prediction accuracy monitoring
-- System health monitoring
-
-## 🔒 Security & Privacy
-
-- Farmer phone numbers are hashed
-- Secure API endpoints
-- Row Level Security (RLS) on all database tables
-- Rate limiting on SMS endpoints
-- ML model access controls
-
-## 💰 Cost Considerations
-
-### SMS Costs (MTN Rwanda):
-- Incoming SMS: ~50 RWF per message
-- Outgoing SMS: ~50 RWF per message
-- Monthly gateway fee: ~50,000 RWF
-- Setup fee: ~200,000 RWF
-
-### ML Model Hosting:
-- Local development: Free
-- Cloud hosting: $10-50/month
-- Serverless: Pay per prediction
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test ML model integration
-5. Submit a pull request
-
-## 📞 Support
-
-For technical support or questions:
-- Email: support@soilsync.rw
-- Phone: +250 788 123 456
-- Documentation: [docs.soilsync.rw](https://docs.soilsync.rw)
-
-## 📄 License
-
-MIT License - see LICENSE file for details
+SoilSync is a full-stack, AI-powered platform for real-time soil analysis, fertilizer recommendations, and farm data management. It combines a modern React dashboard, a Python ML backend, Supabase for authentication and data, and robust SMS/IoT integration to empower farmers and agronomists with actionable insights—online and offline.
 
 ---
 
-**Happy Farming with AI! 🌱🤖**
+## 🌟 Features
+- **AI-Powered Fertilizer Recommendations** (ML backend, Python, scikit-learn)
+- **SMS Service** for instant, offline fertilizer advice (Twilio integration)
+- **IoT Sensor Data** simulation and real device support
+- **Interactive Dashboard** (React + Vite + Tailwind)
+- **Supabase Auth & Database** (Postgres, RLS, Edge Functions)
+- **Analytics & Reporting** for farm and model performance
+- **Mobile Responsive** and production-ready
+
+---
+
+## 🏗️ Architecture
+
+```mermaid
+graph TD;
+  A[Farmer SMS/IoT] -->|SMS| B(Supabase Edge Function)
+  B -->|REST| C[Python ML Server (Flask)]
+  C -->|Prediction| B
+  B -->|Response| A
+  D[Web Dashboard (React)] -->|API| B
+  D -->|API| C
+  D -->|DB| E[Supabase DB]
+  B -->|DB| E
+  C -->|Model Files| F[ML_Models/]
+```
+
+---
+
+## 🗂️ Folder Structure
+
+```
+Soil-Sync/
+├── src/                # React frontend (Vite, TypeScript)
+│   ├── components/     # UI components (SMS, IoT, Auth, etc.)
+│   ├── services/       # API and business logic
+│   └── ...
+├── python-ml-server/   # Python Flask ML backend
+│   ├── ML_Models/      # Trained model files (.pkl, .joblib)
+│   ├── app.py          # Main Flask app
+│   └── ...
+├── supabase/           # Edge functions, migrations, policies
+├── deployment/         # Deployment scripts (Docker, shell)
+├── public/             # Static assets
+├── README.md           # This file
+└── ...
+```
+
+---
+
+## ⚙️ Tech Stack
+- **Frontend:** React, TypeScript, Vite, Tailwind CSS
+- **Backend:** Python, Flask, scikit-learn, joblib
+- **Database:** Supabase (Postgres), RLS, Edge Functions
+- **SMS:** Twilio (trial/prod), Supabase Edge Functions
+- **IoT:** Simulated and real sensor support
+- **Deployment:** Vercel (frontend), Render (backend), Docker
+
+---
+
+## 🚀 Quick Start
+
+### 1. Prerequisites
+- Node.js 18+
+- Python 3.8+
+- Docker & Docker Compose
+- Supabase account
+- Twilio account (for SMS)
+- Git
+
+### 2. Clone & Install
+```bash
+git clone < https://github.com/charite-uwatwembi/Soil-Sync.git >
+cd Soil-Sync
+npm install
+```
+
+### 3. Environment Variables
+Copy `.env.example` to `.env` and fill in:
+```env
+# Supabase
+VITE_SUPABASE_URL=********************
+VITE_SUPABASE_ANON_KEY=**************************
+# ML Model
+VITE_ML_MODEL_ENDPOINT=https://soil-sync-nq0s.onrender.com/health
+# SMS
+VITE_TWILIO_ACCOUNT_SID=********************
+VITE_TWILIO_AUTH_TOKEN=**********************
+VITE_TWILIO_PHONE_NUMBER=+1 856 595 3915
+```
+
+### 4. Backend (ML Server)
+```bash
+cd python-ml-server
+pip install -r requirements.txt
+# Place your .pkl/.joblib models in ML_Models/
+python app.py
+```
+
+### 5. Frontend (React)
+```bash
+cd ../
+npm run dev
+# Visit http://localhost:5173
+```
+
+### 6. Supabase Setup
+- Create a project at [supabase.com](https://supabase.com)
+- Run SQL migrations in `supabase/migrations/`
+- Deploy Edge Functions in `supabase/functions/`
+
+---
+
+## 📱 SMS Service
+
+- **Twilio Number:** +1 856 595 3915
+- **Format:**
+  ```
+  Temp:25,Humidity:60,Moisture:30,Soil_Type:Sandy,Crop_Type:Wheat,N:0.5,P:30,K:20
+  ```
+- **Allowed Soil_Type:** Sandy, Clay, Loamy
+- **Allowed Crop_Type:** Wheat, Rice, Maize
+- **All fields required.**
+- **Help:** Send `HELP` for instructions.
+
+---
+
+## 🤖 ML Model Integration
+- trained `.pkl`/`.joblib` models in `python-ml-server/ML_Models/`
+- Model accept features: Temp, Humidity, Moisture, Soil_Type, Crop_Type, N, P, K
+- Flask server exposes `/predict` and `/health` endpoints
+- See `python-ml-server/app.py` for details
+
+---
+
+## 🌐 IoT Integration
+- Simulate sensor data in the dashboard (Soil Data page)
+- Real sensors can POST to Supabase Edge Functions
+- Data stored in `iot_sensor_data` table
+
+---
+
+## 🗄️ Database Schema (Supabase)
+- **Users:** Auth, profile
+- **sms_interactions:** Logs all SMS requests/responses
+- **iot_sensor_data:** Stores IoT readings
+- **ml_predictions:** Stores model predictions
+- **news_articles:** Cached agri news
+- **user_preferences:** User settings
+- **RLS:** Row Level Security enabled on all tables
+
+---
+
+## 🛡️ Security
+- Supabase Auth for all users
+- RLS on all tables
+- API keys for ML endpoints
+- SMS rate limiting
+- Phone numbers hashed in logs
+
+---
+
+## 💸 Cost Considerations
+- Twilio SMS: trial/free, then per-message cost
+- Render ML backend: free tier or paid
+- Supabase: free tier or paid
+- Vercel: free tier or paid
+
+---
+
+## 🛠️ Deployment
+- **Frontend:** Vercel (recommended), Netlify, or static hosting
+- **Backend:** Render, Docker, or any Python host
+- **Supabase:** Managed cloud
+- **Edge Functions:** Deploy via Supabase CLI
+
+---
+
+## 🧑‍💻 Contributing
+1. Fork the repo
+2. Create a feature branch
+3. Make changes & test
+4. Open a pull request
+
+---
+
+## 🆘 Troubleshooting
+- **SMS not working:** Check Twilio credentials, webhook URL, SMS format
+- **ML errors:** Check model file, feature order, logs in `python-ml-server/app.py`
+- **Supabase issues:** Check API keys, RLS policies, migration status
+- **IoT issues:** Check webhook URL, device config
+
+---
+
+## 📞 Support
+- Email: support@soilsync.rw
+- Phone: +1 856 595 3915
+- Hosted Link: [soilsync.rw](https://soil-sync-proj.vercel.app/)
+
+---
+
+**Happy Farming with SoilSync! 🌱🤖**
