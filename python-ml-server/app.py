@@ -122,7 +122,6 @@ def predict():
 
 @app.route("/sms", methods=["POST"])
 def sms_reply():
-    # 1. Validate Twilio signature
     validator = RequestValidator(TWILIO_AUTH_TOKEN)
     twilio_signature = request.headers.get("X-Twilio-Signature", "")
     url = request.url
@@ -130,12 +129,62 @@ def sms_reply():
 
     is_valid = validator.validate(url, post_vars, twilio_signature)
     if not is_valid:
-        abort(403)  # Forbidden if not from Twilio
+        abort(403)
 
-    # 2. Process the message and reply
     incoming_msg = post_vars.get('Body', '').strip()
     resp = MessagingResponse()
-    resp.message(f"You said: {incoming_msg}")
+
+    # --- Parse the SMS body for model input ---
+    # Example expected format: "Temp:25,Humidity:60,Moisture:30,Soil_Type:Sandy,Crop_Type:Wheat,N:50,P:30,K:20"
+    try:
+        # Simple parser (adapt as needed)
+        data = {}
+        for part in incoming_msg.split(','):
+            if ':' in part:
+                key, value = part.split(':', 1)
+                key = key.strip().lower()
+                value = value.strip()
+                # Map SMS keys to model keys
+                key_map = {
+                    'temp': 'Temparature',
+                    'temperature': 'Temparature',
+                    'humidity': 'Humidity',
+                    'moisture': 'Moisture',
+                    'soil_type': 'Soil_Type',
+                    'soil': 'Soil_Type',
+                    'crop_type': 'Crop_Type',
+                    'crop': 'Crop_Type',
+                    'n': 'Nitrogen',
+                    'nitrogen': 'Nitrogen',
+                    'p': 'Phosphorous',
+                    'phosphorous': 'Phosphorous',
+                    'k': 'Potassium',
+                    'potassium': 'Potassium'
+                }
+                mapped_key = key_map.get(key, key)
+                data[mapped_key] = value
+
+        # Convert numeric fields
+        for field in ['Temparature', 'Humidity', 'Moisture', 'Nitrogen', 'Potassium', 'Phosphorous']:
+            if field in data:
+                data[field] = float(data[field])
+
+        # Check for missing fields
+        missing = [col for col in MODEL_COLUMNS if col not in data]
+        if missing:
+            resp.message(f"Missing fields: {', '.join(missing)}. Please send all required data.")
+        else:
+            # Predict
+            result = model_server.predict(data)
+            reply = (
+                f"Recommended Fertilizer: {result['fertilizer_name']}\n"
+                f"Application Rate: {result['application_rate']}\n"
+                f"Confidence: {result['confidence']}\n"
+                f"Expected Yield Increase: {result['expected_yield_increase']}"
+            )
+            resp.message(reply)
+    except Exception as e:
+        resp.message(f"Error processing your request: {str(e)}")
 
     return Response(str(resp), mimetype='application/xml')
 
