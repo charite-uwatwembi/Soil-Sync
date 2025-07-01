@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { MessageSquare, Send, Phone, Clock, CheckCircle, AlertCircle, HelpCircle } from 'lucide-react';
+import { AlertCircle, CheckCircle, Clock, HelpCircle, MessageSquare, Phone, Send } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 import { smsService, type SMSMessage } from '../services/smsService';
 
 interface SMSServiceProps {
@@ -48,11 +48,11 @@ const SMSService: React.FC<SMSServiceProps> = ({ isDarkMode }) => {
   };
 
   const quickTestMessages = [
-    { label: 'Maize Test', message: 'SOIL 15 120 0.25 MAIZE' },
-    { label: 'Rice Test', message: 'SOIL P8 K95 N0.18 RICE' },
-    { label: 'Beans Test', message: 'SOIL 12 85 0.22 BEANS' },
+    { label: 'Wheat (Sandy)', message: 'Temp:25,Humidity:60,Moisture:30,Soil_Type:Sandy,Crop_Type:Wheat,N:0.5,P:30,K:20' },
+    { label: 'Rice (Clay)', message: 'Temp:28,Humidity:70,Moisture:35,Soil_Type:Clay,Crop_Type:Rice,N:0.4,P:25,K:18' },
+    { label: 'Maize (Loamy)', message: 'Temp:26,Humidity:65,Moisture:32,Soil_Type:Loamy,Crop_Type:Maize,N:0.6,P:28,K:22' },
     { label: 'Help Request', message: 'HELP' },
-    { label: 'Invalid Format', message: 'SOIL 15 120' }
+    { label: 'Invalid Format', message: 'Temp:25,Humidity:60' }
   ];
 
   const getStatusIcon = (status: string) => {
@@ -99,7 +99,7 @@ const SMSService: React.FC<SMSServiceProps> = ({ isDarkMode }) => {
       <div className={`mb-6 p-4 rounded-lg ${isDarkMode ? 'bg-gray-700' : 'bg-green-50'}`}>
         <div className="flex items-center space-x-2 mb-2">
           <Phone className="h-4 w-4 text-green-600" />
-          <span className="font-medium text-green-600">SMS Number: +250 788 SOIL RW</span>
+          <span className="font-medium text-green-600">SMS Number: +1 856 595 3915</span>
         </div>
         <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
           Farmers can send SMS messages to get instant fertilizer recommendations without internet access.
@@ -115,15 +115,21 @@ const SMSService: React.FC<SMSServiceProps> = ({ isDarkMode }) => {
         <div className={`p-4 rounded-lg ${isDarkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
           <div className="space-y-2 text-sm">
             <div>
-              <span className="font-medium">Standard:</span>
+              <span className="font-medium">Format:</span>
               <code className={`ml-2 px-2 py-1 rounded ${isDarkMode ? 'bg-gray-600' : 'bg-gray-200'}`}>
-                SOIL 15 120 0.25 MAIZE
+                Temp:25,Humidity:60,Moisture:30,Soil_Type:Sandy,Crop_Type:Wheat,N:50,P:30,K:20
               </code>
             </div>
             <div>
-              <span className="font-medium">Labeled:</span>
+              <span className="font-medium">Allowed Soil_Type:</span>
               <code className={`ml-2 px-2 py-1 rounded ${isDarkMode ? 'bg-gray-600' : 'bg-gray-200'}`}>
-                SOIL P15 K120 N0.25 MAIZE
+                Sandy, Clay, Loamy
+              </code>
+            </div>
+            <div>
+              <span className="font-medium">Allowed Crop_Type:</span>
+              <code className={`ml-2 px-2 py-1 rounded ${isDarkMode ? 'bg-gray-600' : 'bg-gray-200'}`}>
+                Wheat, Rice, Maize
               </code>
             </div>
             <div>
@@ -134,7 +140,7 @@ const SMSService: React.FC<SMSServiceProps> = ({ isDarkMode }) => {
             </div>
           </div>
           <div className="mt-3 text-xs text-gray-500">
-            P = Phosphorus (0-200 ppm) • K = Potassium (0-1000 ppm) • N = Nitrogen (0-2%) • Crops: maize, rice, beans, potato, cassava, banana
+            All fields are required. Example: Temp:25,Humidity:60,Moisture:30,Soil_Type:Sandy,Crop_Type:Wheat,N:50,P:30,K:20
           </div>
         </div>
       </div>
@@ -158,7 +164,7 @@ const SMSService: React.FC<SMSServiceProps> = ({ isDarkMode }) => {
                   ? 'bg-gray-700 border-gray-600 text-white focus:border-green-500' 
                   : 'bg-white border-gray-300 text-gray-900 focus:border-green-500'
               } focus:outline-none focus:ring-2 focus:ring-green-500/20`}
-              placeholder="+250788123456"
+              placeholder="+1 856 595 3915"
             />
           </div>
           
@@ -179,7 +185,7 @@ const SMSService: React.FC<SMSServiceProps> = ({ isDarkMode }) => {
                     ? 'bg-gray-700 border-gray-600 text-white focus:border-green-500' 
                     : 'bg-white border-gray-300 text-gray-900 focus:border-green-500'
                 } focus:outline-none focus:ring-2 focus:ring-green-500/20`}
-                placeholder="SOIL 15 120 0.25 MAIZE"
+                placeholder="Temp:25,Humidity:60,Moisture:30,Soil_Type:Sandy,Crop_Type:Wheat,N:0.5,P:30,K:20"
               />
               <button
                 onClick={handleTestSMS}

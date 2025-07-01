@@ -43,43 +43,35 @@ chmod +x deploy-ml-model.sh
 ### How It Works
 Farmers can send SMS messages to get instant fertilizer recommendations without needing internet access.
 
-**SMS Number**: `+250 788 SOIL RW` (when deployed with MTN Rwanda)
+**SMS Number**: `+1 856 595 3915`
 
-### SMS Formats
+### SMS Format
 
-#### Standard Format:
-```
-SOIL [Phosphorus] [Potassium] [Nitrogen] [Crop]
-```
-**Example**: `SOIL 15 120 0.25 MAIZE`
+Send an SMS in the following format:
 
-#### Labeled Format:
 ```
-SOIL P[value] K[value] N[value] [Crop]
+Temp:25,Humidity:60,Moisture:30,Soil_Type:Sandy,Crop_Type:Wheat,N:50,P:30,K:20
 ```
-**Example**: `SOIL P15 K120 N0.25 MAIZE`
 
-### Parameters:
-- **Phosphorus**: 0-200 ppm
-- **Potassium**: 0-1000 ppm  
-- **Nitrogen**: 0-2% (use decimal, e.g., 0.25 for 0.25%)
-- **Crop**: maize, rice, beans, potato, cassava, banana
+- **All fields are required**
+- **Allowed Soil_Type:** Sandy, Clay, Loamy
+- **Allowed Crop_Type:** Wheat, Rice, Maize
 
 ### Sample SMS Interactions:
 
-**Farmer sends**: `SOIL 15 120 0.25 MAIZE`
+**Farmer sends**: `Temp:25,Humidity:60,Moisture:30,Soil_Type:Sandy,Crop_Type:Wheat,N:50,P:30,K:20`
 
 **System responds**:
 ```
 SoilSync Recommendation:
-Crop: MAIZE
+Crop: WHEAT
 Fertilizer: NPK 17-17-17
 Rate: 165kg/ha
 Expected yield increase: +20%
 Confidence: 87%
 
 For help: Reply HELP
-For more info: Call 0788-SOIL-RW
+For more info: Call +1 856 595 3915
 ```
 
 ## 🚀 Quick Start Guide
