@@ -1,4 +1,4 @@
-# SoilSync - Smart Agriculture Platform
+# SoilSync - Smart Agriculture
 
 SoilSync is a full-stack, AI-powered platform for real-time soil analysis, fertilizer recommendations, and farm data management. It combines a modern React dashboard, a Python ML backend, Supabase for authentication and data, and robust SMS/IoT integration to empower farmers and agronomists with actionable insights—online and offline.
 
