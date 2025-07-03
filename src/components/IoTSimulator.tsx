@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Wifi, WifiOff, Zap, Thermometer, Droplets, Activity } from 'lucide-react';
+import { Activity, Droplets, Thermometer, Wifi, WifiOff, Zap } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 
 interface IoTSimulatorProps {
   isDarkMode: boolean;
@@ -56,7 +56,7 @@ const IoTSimulator: React.FC<IoTSimulatorProps> = ({ isDarkMode, onDataReceived 
           setCurrentData(sensorData);
           onDataReceived(sensorData);
         }
-      }, 5000); // Update every 5 seconds
+      }, 30000); // Update every 30 seconds
     }
 
     return () => {
