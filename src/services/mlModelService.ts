@@ -362,6 +362,29 @@ class MLModelService {
 
     return distribution;
   }
+
+  // Fetch prediction history for the current user
+  async getPredictionHistory(limit: number = 50): Promise<any[]> {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      let query = supabase
+        .from('ml_predictions')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(limit);
+      if (user?.id) {
+        query = query.eq('user_id', user.id);
+      }
+      const { data, error } = await query;
+      if (error) {
+        throw new Error(`Failed to fetch prediction history: ${error.message}`);
+      }
+      return data || [];
+    } catch (error) {
+      console.error('Failed to fetch prediction history:', error);
+      throw error;
+    }
+  }
 }
 
 export const mlModelService = new MLModelService();

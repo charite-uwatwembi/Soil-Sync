@@ -8,7 +8,9 @@ import {
   Sprout,
   TrendingUp
 } from 'lucide-react';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { mlModelService } from '../services/mlModelService';
+import DataTable from './DataTable';
 import IoTSimulator from './IoTSimulator';
 import MLModelIntegration from './MLModelIntegration';
 import SMSService from './SMSService';
@@ -172,22 +174,56 @@ const ReportsPage: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }) => (
 );
 
 // History Page
-const HistoryPage: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }) => (
-  <div className="space-y-6">
-    <div className="flex items-center space-x-3 mb-6">
-      <FileText className="h-6 w-6 text-blue-600" />
-      <h2 className="text-2xl font-bold">Analysis History</h2>
+const HistoryPage: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }) => {
+  const [history, setHistory] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchHistory = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await mlModelService.getPredictionHistory(50);
+        // Map ml_predictions fields to DataTable format
+        const mapped = (data || []).map((item: any) => ({
+          id: item.id,
+          date: item.created_at ? new Date(item.created_at).toLocaleString() : '',
+          cropType: item.input_features?.Crop_Type || item.input_features?.cropType || '-',
+          fertilizer: item.prediction_result?.fertilizer || '-',
+          rate: item.prediction_result?.applicationRate || '-',
+          confidence: item.prediction_result?.confidenceScore || '-',
+        }));
+        setHistory(mapped);
+      } catch (err: any) {
+        setError('Failed to load prediction history.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchHistory();
+  }, []);
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center space-x-3 mb-6">
+        <FileText className="h-6 w-6 text-blue-600" />
+        <h2 className="text-2xl font-bold">Analysis History</h2>
+      </div>
+      {loading ? (
+        <div className={`p-6 rounded-xl border ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
+          <p className={`text-center py-8 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Loading...</p>
+        </div>
+      ) : error ? (
+        <div className={`p-6 rounded-xl border ${isDarkMode ? 'bg-red-900/10 border-red-700' : 'bg-red-100 border-red-200'}`}>
+          <p className="text-center py-8 text-red-600">{error}</p>
+        </div>
+      ) : (
+        <DataTable isDarkMode={isDarkMode} data={history} />
+      )}
     </div>
-    
-    <div className={`p-6 rounded-xl border ${
-      isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
-    }`}>
-      <p className={`text-center py-8 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-        Detailed analysis history will be displayed here. This integrates with the main dashboard's DataTable component.
-      </p>
-    </div>
-  </div>
-);
+  );
+};
 
 // Alerts Page
 const AlertsPage: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }) => (
