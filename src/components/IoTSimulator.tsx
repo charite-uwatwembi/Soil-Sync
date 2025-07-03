@@ -31,7 +31,7 @@ const IoTSimulator: React.FC<IoTSimulatorProps> = ({ isDarkMode, onDataReceived 
   // Simulate sensor data generation
   const generateSensorData = (deviceId: string): SensorData => {
     return {
-      temperature: 20 + Math.random() * 15, // 20-35°C
+      temperature: 18 + Math.random() * 14, // 18-32°C
       humidity: 40 + Math.random() * 40, // 40-80%
       soilMoisture: 30 + Math.random() * 40, // 30-70%
       ph: 5.5 + Math.random() * 2, // 5.5-7.5
