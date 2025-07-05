@@ -64,7 +64,7 @@ Soil-Sync/
 
 ### 2. Clone & Install
 ```bash
-git clone < https://github.com/charite-uwatwembi/Soil-Sync.git >
+git clone <https://github.com/charite-uwatwembi/Soil-Sync.git >
 cd Soil-Sync
 npm install
 ```
@@ -87,7 +87,6 @@ VITE_TWILIO_PHONE_NUMBER=+1 856 595 3915
 ```bash
 cd python-ml-server
 pip install -r requirements.txt
-# Place your .pkl/.joblib models in ML_Models/
 python app.py
 ```
 
