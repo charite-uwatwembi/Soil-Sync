@@ -51,6 +51,8 @@ const SMSService: React.FC<SMSServiceProps> = ({ isDarkMode }) => {
     { label: 'Wheat (Sandy)', message: 'Temp:25,Humidity:60,Moisture:30,Soil_Type:Sandy,Crop_Type:Wheat,N:0.5,P:30,K:20' },
     { label: 'Rice (Clay)', message: 'Temp:28,Humidity:70,Moisture:35,Soil_Type:Clay,Crop_Type:Rice,N:0.4,P:25,K:18' },
     { label: 'Maize (Loamy)', message: 'Temp:26,Humidity:65,Moisture:32,Soil_Type:Loamy,Crop_Type:Maize,N:0.6,P:28,K:22' },
+    { label: 'Sugarcane (Black)', message: 'Temp:30,Humidity:75,Moisture:40,Soil_Type:Black,Crop_Type:Sugarcane,N:0.3,P:35,K:25' },
+    { label: 'Cotton (Red)', message: 'Temp:27,Humidity:68,Moisture:28,Soil_Type:Red,Crop_Type:Cotton,N:0.4,P:22,K:15' },
     { label: 'Help Request', message: 'HELP' },
     { label: 'Invalid Format', message: 'Temp:25,Humidity:60' }
   ];
@@ -129,7 +131,7 @@ const SMSService: React.FC<SMSServiceProps> = ({ isDarkMode }) => {
             <div>
               <span className="font-medium">Allowed Crop_Type:</span>
               <code className={`ml-2 px-2 py-1 rounded ${isDarkMode ? 'bg-gray-600' : 'bg-gray-200'}`}>
-                Wheat, Rice, Maize
+                Wheat, Rice, Maize, Sugarcane, Cotton, Tobacco, Paddy, Barley, Millets, Oil Seeds, Pulses, Ground Nuts, Beans, Potato, Cassava, Banana
               </code>
             </div>
             <div>

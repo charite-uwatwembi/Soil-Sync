@@ -7,5 +7,5 @@ gunicorn==21.2.0
 fastapi
 uvicorn
 flask_cors
-dotenv
+python-dotenv
 twilio

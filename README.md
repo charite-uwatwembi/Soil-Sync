@@ -113,7 +113,7 @@ npm run dev
   Temp:25,Humidity:60,Moisture:30,Soil_Type:Sandy,Crop_Type:Wheat,N:0.5,P:30,K:20
   ```
 - **Allowed Soil_Type:** Sandy, Clay, Loamy
-- **Allowed Crop_Type:** Wheat, Rice, Maize
+- **Allowed Crop_Type:** Wheat, Rice, Maize, Sugarcane, Cotton, Tobacco, Paddy, Barley, Millets, Oil Seeds, Pulses, Ground Nuts, Beans, Potato, Cassava, Banana
 - **All fields required.**
 - **Help:** Send `HELP` for instructions.
 

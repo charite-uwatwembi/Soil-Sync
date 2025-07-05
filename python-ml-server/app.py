@@ -23,8 +23,12 @@ MODEL_COLUMNS = [
     'Nitrogen', 'Potassium', 'Phosphorous'
 ]
 
-soil_type_map = {'Sandy': 0, 'Clay': 1, 'Loamy': 2}
-crop_type_map = {'Wheat': 0, 'Rice': 1, 'Maize': 2}
+soil_type_map = {'Sandy': 0, 'Clay': 1, 'Loamy': 2, 'Black': 3, 'Red': 4, 'Clayey': 5}
+crop_type_map = {
+    'Wheat': 0, 'Rice': 1, 'Maize': 2, 'Sugarcane': 3, 'Cotton': 4, 
+    'Tobacco': 5, 'Paddy': 6, 'Barley': 7, 'Millets': 8, 'Oil seeds': 9, 
+    'Pulses': 10, 'Ground Nuts': 11
+}
 
 class FertilizerModelServer:
     def __init__(self):

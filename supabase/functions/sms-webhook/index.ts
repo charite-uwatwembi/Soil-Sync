@@ -50,6 +50,7 @@ function predictFertilizerFromSMS(soilData: SoilData): string {
   // Crop-specific adjustments
   switch (crop_type.toLowerCase()) {
     case 'rice':
+    case 'paddy':
       rate *= 1.25;
       expectedYield += 8;
       break;
@@ -58,6 +59,7 @@ function predictFertilizerFromSMS(soilData: SoilData): string {
       expectedYield += 5;
       break;
     case 'beans':
+    case 'pulses':
       rate *= 0.7;
       fertilizer = "NPK 10-20-10";
       expectedYield += 3;
@@ -68,6 +70,38 @@ function predictFertilizerFromSMS(soilData: SoilData): string {
         fertilizer = "NPK 15-15-20";
       }
       expectedYield += 6;
+      break;
+    case 'sugarcane':
+      rate *= 1.3;
+      expectedYield += 10;
+      break;
+    case 'cotton':
+      rate *= 1.05;
+      expectedYield += 4;
+      break;
+    case 'tobacco':
+      rate *= 0.9;
+      expectedYield += 2;
+      break;
+    case 'barley':
+      rate *= 0.8;
+      expectedYield += 3;
+      break;
+    case 'millets':
+      rate *= 0.75;
+      expectedYield += 2;
+      break;
+    case 'oil seeds':
+      rate *= 0.85;
+      expectedYield += 3;
+      break;
+    case 'ground nuts':
+      rate *= 0.8;
+      expectedYield += 2;
+      break;
+    case 'wheat':
+      rate *= 1.0;
+      expectedYield += 4;
       break;
   }
 
@@ -191,7 +225,7 @@ Where:
 P = Phosphorus (ppm, 0-200)
 K = Potassium (ppm, 0-1000) 
 N = Nitrogen (%, 0-2)
-CROP = maize, rice, beans, potato, cassava, banana
+CROP = wheat, rice, maize, sugarcane, cotton, tobacco, paddy, barley, millets, oil seeds, pulses, ground nuts, beans, potato, cassava, banana
 
 Alternative format:
 SOIL P15 K120 N0.25 MAIZE
