@@ -36,6 +36,13 @@ const cropTypeOptions = [
   { value: 'potato', label: 'Potato' },
   { value: 'cassava', label: 'Cassava' },
   { value: 'banana', label: 'Banana' },
+  { value: 'wheat', label: 'Wheat' },
+  { value: 'sugarcane', label: 'Sugarcane' },
+  { value: 'cotton', label: 'Cotton' },
+  { value: 'tobacco', label: 'Tobacco' },
+  { value: 'paddy', label: 'Paddy' },
+  { value: 'barley', label: 'Barley' },
+  { value: 'millets', label: 'Millets' },
 ];
 
 const SoilForm: React.FC<SoilFormProps> = ({ isDarkMode, onSubmit, loading = false }) => {
