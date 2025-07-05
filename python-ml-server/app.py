@@ -45,6 +45,7 @@ class FertilizerModelServer:
                 return False
             # The pickle file contains the LabelEncoder
             self.label_encoder = joblib.load(model_path)
+            logger.info(f"Fertilizer classes: {self.label_encoder.classes_}")
             # The classifier is assumed to be in 'classifier.pkl' in the same directory
             classifier_path = os.path.join(ml_models_dir, 'classifier.pkl')
             if not os.path.exists(classifier_path):
