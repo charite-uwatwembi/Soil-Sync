@@ -88,17 +88,26 @@ const CropsPage: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }) => (
     </div>
     
     <p className={`mb-4 text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-      These are the main crops managed in your region. Monitoring their status helps optimize yield and resource use.
+      These are the main crops managed in your region, including cereals, cash crops, and food crops. Monitoring their status helps optimize yield and resource use across diverse agricultural systems.
     </p>
 
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {[
-        { name: 'Maize', area: '45 ha', status: 'Growing', yield: '8.2 t/ha', image: 'https://images.pexels.com/photos/2132227/pexels-photo-2132227.jpeg?auto=compress&cs=tinysrgb&w=400' },
-        { name: 'Rice', area: '32 ha', status: 'Harvesting', yield: '6.8 t/ha', image: 'https://images.pexels.com/photos/1595104/pexels-photo-1595104.jpeg?auto=compress&cs=tinysrgb&w=400' },
-        { name: 'Beans', area: '28 ha', status: 'Planting', yield: '2.1 t/ha', image: 'https://images.pexels.com/photos/1595108/pexels-photo-1595108.jpeg?auto=compress&cs=tinysrgb&w=400' },
-        { name: 'Potato', area: '18 ha', status: 'Growing', yield: '12.5 t/ha', image: 'https://images.pexels.com/photos/2132180/pexels-photo-2132180.jpeg?auto=compress&cs=tinysrgb&w=400' },
-        { name: 'Cassava', area: '25 ha', status: 'Mature', yield: '15.2 t/ha', image: 'https://images.pexels.com/photos/1595104/pexels-photo-1595104.jpeg?auto=compress&cs=tinysrgb&w=400' },
-        { name: 'Banana', area: '12 ha', status: 'Growing', yield: '18.7 t/ha', image: 'https://images.pexels.com/photos/2132227/pexels-photo-2132227.jpeg?auto=compress&cs=tinysrgb&w=400' }
+        { name: 'Maize', area: '45 ha', status: 'Growing', yield: '8.2 t/ha', image: '/maize.png' },
+        { name: 'Rice', area: '32 ha', status: 'Harvesting', yield: '6.8 t/ha', image: '/rice.png' },
+        { name: 'Wheat', area: '28 ha', status: 'Planting', yield: '4.5 t/ha', image: '/wheat.png' },
+        { name: 'Sugarcane', area: '18 ha', status: 'Growing', yield: '85.2 t/ha', image: '/sugarcane.png' },
+        { name: 'Cotton', area: '25 ha', status: 'Mature', yield: '2.8 t/ha', image: '/cotton.png' },
+        { name: 'Tobacco', area: '12 ha', status: 'Growing', yield: '1.5 t/ha', image: '/tobacco.png' },
+        { name: 'Barley', area: '20 ha', status: 'Harvesting', yield: '3.8 t/ha', image: '/barley.png' },
+        { name: 'Millets', area: '22 ha', status: 'Growing', yield: '1.2 t/ha', image: '/millets.png' },
+        { name: 'Oil Seeds', area: '16 ha', status: 'Planting', yield: '1.8 t/ha', image: '/oilseed.png' },
+        { name: 'Pulses', area: '14 ha', status: 'Growing', yield: '1.5 t/ha', image: '/pulse.png' },
+        { name: 'Ground Nuts', area: '18 ha', status: 'Mature', yield: '2.1 t/ha', image: '/nuts.png' },
+        { name: 'Beans', area: '10 ha', status: 'Growing', yield: '1.8 t/ha', image: '/beans.png' },
+        { name: 'Potato', area: '12 ha', status: 'Growing', yield: '12.5 t/ha', image: '/potato.png' },
+        { name: 'Cassava', area: '8 ha', status: 'Mature', yield: '15.2 t/ha', image: '/cassava.png' },
+        { name: 'Banana', area: '6 ha', status: 'Growing', yield: '18.7 t/ha', image: '/banana.png' }
       ].map((crop, index) => (
         <div key={index} className={`p-6 rounded-xl border transition-all hover:shadow-lg ${
           isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
