@@ -162,8 +162,8 @@ npm run dev
 ---
 
 ## 🛠️ Deployment
-- **Frontend:** Vercel (recommended), Netlify, or static hosting
-- **Backend:** Render, Docker, or any Python host
+- **Frontend:** Vercel
+- **Backend:** Render, Docker
 - **Supabase:** Managed cloud
 - **Edge Functions:** Deploy via Supabase CLI
 
