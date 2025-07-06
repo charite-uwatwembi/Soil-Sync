@@ -209,7 +209,7 @@ npm run dev
 
 ## 📞 Support
 - Email: support@soilsync.rw
-- Phone: +1 856 595 3915
+- Phone: +250789951064
 - Hosted Link: [soilsync.rw](https://soil-sync-proj.vercel.app/)
 
 ---
