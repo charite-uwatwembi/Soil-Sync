@@ -201,6 +201,7 @@ npm run dev
 - **IoT Simulator:** ![IoT Simulator Screenshot](public/iot.png)
 - **Sms Service:** ![sms](public/sms.png)
 - **Fertilizer Recommendation without internet:** ![Fertilizer Recommendation Screenshot](/public/phone.png)
+- **SignIn & SignUp:** ![SignIn & SignUp page](/public/signin.png)
 -->
 
 ---
