@@ -115,25 +115,30 @@ class MLModelService {
       confidence = 94;
       expectedYield = 25;
     } else if (Nitrogen < 0.25 && Phosphorous < 12) {
-      fertilizer = "DAP (Diammonium Phosphate)";
+      fertilizer = "DAP";
       rate = 110;
       confidence = 91;
       expectedYield = 22;
     } else if (Phosphorous < 10) {
-      fertilizer = "TSP (Triple Super Phosphate)";
+      fertilizer = "NPK 10-26-26";
       rate = 100;
       confidence = 89;
       expectedYield = 20;
     } else if (Potassium < 80) {
-      fertilizer = "NPK 15-15-15";
+      fertilizer = "NPK 14-35-14";
       rate = 140;
       confidence = 87;
       expectedYield = 18;
     } else if (Potassium < 120 && Nitrogen > 0.3) {
-      fertilizer = "NPK 20-10-10";
+      fertilizer = "NPK 20-20";
       rate = 130;
       confidence = 90;
       expectedYield = 17;
+    } else if (Phosphorous > 30) {
+      fertilizer = "NPK 28-28";
+      rate = 110;
+      confidence = 88;
+      expectedYield = 19;
     }
 
     // Organic matter adjustments
@@ -155,7 +160,8 @@ class MLModelService {
     }
 
     // Crop-specific adjustments
-    switch (Crop_Type.toLowerCase()) {
+    console.log('mlModelService: Crop_Type in fallback:', Crop_Type);
+    switch ((Crop_Type || '').toLowerCase()) {
       case 'rice':
         rate *= 1.25;
         expectedYield += 8;
@@ -169,32 +175,52 @@ class MLModelService {
         expectedYield += 5;
         if (Nitrogen < 0.25) {
           fertilizer = "NPK 23-10-5";
-          confidence += 3;
         }
         break;
       case 'beans':
         rate *= 0.7;
-        fertilizer = "NPK 10-20-10";
         expectedYield += 3;
         confidence += 7;
         break;
       case 'potato':
         rate *= 1.15;
-        if (Potassium < 150) {
-          fertilizer = "NPK 15-15-20";
-          confidence += 4;
-        }
         expectedYield += 6;
         break;
       case 'cassava':
         rate *= 0.8;
-        fertilizer = "NPK 15-15-15";
         expectedYield += 4;
         break;
       case 'banana':
         rate *= 1.3;
-        fertilizer = "NPK 17-6-18";
         expectedYield += 7;
+        break;
+      case 'wheat':
+        rate *= 1.1;
+        expectedYield += 6;
+        break;
+      case 'sugarcane':
+        rate *= 1.2;
+        expectedYield += 7;
+        break;
+      case 'cotton':
+        rate *= 0.9;
+        expectedYield += 4;
+        break;
+      case 'tobacco':
+        rate *= 0.85;
+        expectedYield += 3;
+        break;
+      case 'paddy':
+        rate *= 1.28;
+        expectedYield += 8;
+        break;
+      case 'barley':
+        rate *= 1.05;
+        expectedYield += 5;
+        break;
+      case 'millets':
+        rate *= 0.95;
+        expectedYield += 4;
         break;
     }
 
@@ -306,20 +332,22 @@ class MLModelService {
   async getPredictionAnalytics(days: number = 30): Promise<any> {
     try {
       const { data, error } = await supabase
-        .from('ml_predictions')
-        .select('*')
+        .from('soil_analyses')
+        .select('crop_type, confidence_score')
         .gte('created_at', new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString());
 
       if (error) {
         throw error;
       }
 
+      const analyses = data || [];
+
       return {
-        totalPredictions: data.length,
-        averageConfidence: data.reduce((sum, p) => sum + p.confidence_score, 0) / data.length || 0,
-        averageProcessingTime: data.reduce((sum, p) => sum + p.processing_time_ms, 0) / data.length || 0,
-        cropDistribution: this.calculateCropDistribution(data),
-        confidenceDistribution: this.calculateConfidenceDistribution(data)
+        totalPredictions: analyses.length,
+        averageConfidence: analyses.reduce((sum, a) => sum + (a.confidence_score || 0), 0) / analyses.length || 0,
+        averageProcessingTime: 0,
+        cropDistribution: this.calculateCropDistributionFromAnalyses(analyses),
+        confidenceDistribution: this.calculateConfidenceDistributionFromAnalyses(analyses)
       };
     } catch (error) {
       console.error('Failed to get prediction analytics:', error);
@@ -333,24 +361,24 @@ class MLModelService {
     }
   }
 
-  private calculateCropDistribution(predictions: any[]): Record<string, number> {
+  private calculateCropDistributionFromAnalyses(analyses: any[]): Record<string, number> {
     const distribution: Record<string, number> = {};
-    predictions.forEach(p => {
-      const crop = p.input_features?.cropType || p.input?.cropType || 'unknown';
+    analyses.forEach(analysis => {
+      const crop = analysis.crop_type || 'unknown';
       distribution[crop] = (distribution[crop] || 0) + 1;
     });
     return distribution;
   }
 
-  private calculateConfidenceDistribution(predictions: any[]): Record<string, number> {
+  private calculateConfidenceDistributionFromAnalyses(analyses: any[]): Record<string, number> {
     const distribution: Record<string, number> = {
       'high (90-100%)': 0,
       'medium (70-89%)': 0,
       'low (0-69%)': 0
     };
 
-    predictions.forEach(p => {
-      const confidence = p.confidence_score || p.output?.confidenceScore || 0;
+    analyses.forEach(analysis => {
+      const confidence = analysis.confidence_score || 0;
       if (confidence >= 90) {
         distribution['high (90-100%)']++;
       } else if (confidence >= 70) {

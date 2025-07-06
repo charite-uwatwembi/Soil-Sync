@@ -55,8 +55,9 @@ const IoTSimulator: React.FC<IoTSimulatorProps> = ({ isDarkMode, onDataReceived 
           const sensorData = generateSensorData(randomDevice.id);
           setCurrentData(sensorData);
           onDataReceived(sensorData);
+          console.log('Sensor data sent:', sensorData);
         }
-      }, 10000); // Update every 30 seconds
+      }, 5000); // Update every 30 seconds
     }
 
     return () => {

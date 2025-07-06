@@ -67,7 +67,10 @@ const AgriNews: React.FC<AgriNewsProps> = ({ isDarkMode }) => {
 
   const filteredArticles = articles.filter(article => {
     if (!searchTerm) return true;
-    const searchText = `${article.title} ${article.excerpt} ${article.tags.join(' ')}`.toLowerCase();
+    const articleTitle = article.title || '';
+    const articleExcerpt = article.excerpt || '';
+    const articleTags = (article.tags && Array.isArray(article.tags)) ? article.tags.join(' ') : '';
+    const searchText = `${articleTitle} ${articleExcerpt} ${articleTags}`.toLowerCase();
     return searchText.includes(searchTerm.toLowerCase());
   });
 

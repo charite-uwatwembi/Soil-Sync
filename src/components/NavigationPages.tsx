@@ -8,8 +8,7 @@ import {
   Sprout,
   TrendingUp
 } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
-import { mlModelService } from '../services/mlModelService';
+import React from 'react';
 import DataTable from './DataTable';
 import IoTSimulator from './IoTSimulator';
 import MLModelIntegration from './MLModelIntegration';
@@ -19,9 +18,10 @@ interface NavigationPagesProps {
   isDarkMode: boolean;
   activePage: string;
   onSensorData?: (data: any) => void;
+  historyData: HistoryData[];
 }
 
-const NavigationPages: React.FC<NavigationPagesProps> = ({ isDarkMode, activePage, onSensorData }) => {
+const NavigationPages: React.FC<NavigationPagesProps> = ({ isDarkMode, activePage, onSensorData, historyData }) => {
   const renderPage = () => {
     switch (activePage) {
       case 'Analytics':
@@ -33,7 +33,7 @@ const NavigationPages: React.FC<NavigationPagesProps> = ({ isDarkMode, activePag
       case 'Reports':
         return <ReportsPage isDarkMode={isDarkMode} />;
       case 'History':
-        return <HistoryPage isDarkMode={isDarkMode} />;
+        return <HistoryPage isDarkMode={isDarkMode} historyData={historyData} />;
       case 'Alerts':
         return <AlertsPage isDarkMode={isDarkMode} />;
       case 'Settings':
@@ -61,7 +61,7 @@ const AnalyticsPage: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }) => (
         { title: 'Total Analyses', value: '1,247', change: '+12%', color: 'blue' },
         { title: 'Avg Confidence', value: '94.2%', change: '+2.1%', color: 'green' },
         { title: 'Yield Improvement', value: '18.5%', change: '+3.2%', color: 'purple' },
-        { title: 'Active Farmers', value: '342', change: '+8%', color: 'orange' }
+        { title: 'Active Farmers', value: '5', change: '+8%', color: 'orange' }
       ].map((stat, index) => (
         <div key={index} className={`p-6 rounded-xl border ${
           isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
@@ -183,52 +183,19 @@ const ReportsPage: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }) => (
 );
 
 // History Page
-const HistoryPage: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }) => {
-  const [history, setHistory] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchHistory = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const data = await mlModelService.getPredictionHistory(50);
-        // Map ml_predictions fields to DataTable format
-        const mapped = (data || []).map((item: any) => ({
-          id: item.id,
-          date: item.created_at ? new Date(item.created_at).toLocaleString() : '',
-          cropType: item.input_features?.Crop_Type || item.input_features?.cropType || '-',
-          fertilizer: item.prediction_result?.fertilizer || '-',
-          rate: item.prediction_result?.applicationRate || '-',
-          confidence: item.prediction_result?.confidenceScore || '-',
-        }));
-        setHistory(mapped);
-      } catch (err: any) {
-        setError('Failed to load prediction history.');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchHistory();
-  }, []);
-
+const HistoryPage: React.FC<{ isDarkMode: boolean; historyData: HistoryData[] }> = ({ isDarkMode, historyData }) => {
   return (
     <div className="space-y-6">
       <div className="flex items-center space-x-3 mb-6">
         <FileText className="h-6 w-6 text-blue-600" />
         <h2 className="text-2xl font-bold">Analysis History</h2>
       </div>
-      {loading ? (
+      {historyData.length === 0 ? (
         <div className={`p-6 rounded-xl border ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
-          <p className={`text-center py-8 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Loading...</p>
-        </div>
-      ) : error ? (
-        <div className={`p-6 rounded-xl border ${isDarkMode ? 'bg-red-900/10 border-red-700' : 'bg-red-100 border-red-200'}`}>
-          <p className="text-center py-8 text-red-600">{error}</p>
+          <p className={`text-center py-8 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>No analysis history available yet.</p>
         </div>
       ) : (
-        <DataTable isDarkMode={isDarkMode} data={history} />
+        <DataTable isDarkMode={isDarkMode} data={historyData} />
       )}
     </div>
   );

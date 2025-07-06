@@ -45,6 +45,8 @@ const cropTypeOptions = [
   { value: 'millets', label: 'Millets' },
 ];
 
+export { cropTypeOptions };
+
 const SoilForm: React.FC<SoilFormProps> = ({ isDarkMode, onSubmit, loading = false }) => {
   const [formData, setFormData] = useState<SoilModelInput>({
     Temparature: 25,

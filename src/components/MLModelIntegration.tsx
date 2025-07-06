@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Brain, Upload, Download, Settings, TrendingUp, AlertCircle, CheckCircle, Activity, Server } from 'lucide-react';
+import { Activity, AlertCircle, Brain, CheckCircle, Server, TrendingUp } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 import { mlModelService } from '../services/mlModelService';
 
 interface MLModelIntegrationProps {
@@ -23,7 +23,8 @@ interface ModelAnalytics {
 const MLModelIntegration: React.FC<MLModelIntegrationProps> = ({ isDarkMode }) => {
   const [modelHealth, setModelHealth] = useState<ModelHealth | null>(null);
   const [analytics, setAnalytics] = useState<ModelAnalytics | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingHealth, setIsLoadingHealth] = useState(false);
+  const [isLoadingAnalytics, setIsLoadingAnalytics] = useState(false);
   const [testResult, setTestResult] = useState<any>(null);
   const [isTestingModel, setIsTestingModel] = useState(false);
 
@@ -33,25 +34,34 @@ const MLModelIntegration: React.FC<MLModelIntegrationProps> = ({ isDarkMode }) =
   }, []);
 
   const loadModelHealth = async () => {
+    setIsLoadingHealth(true);
     try {
       const health = await mlModelService.getModelHealth();
       setModelHealth(health);
     } catch (error) {
       console.error('Failed to load model health:', error);
+      setModelHealth(null);
+    } finally {
+      setIsLoadingHealth(false);
     }
   };
 
   const loadAnalytics = async () => {
+    setIsLoadingAnalytics(true);
     try {
       const analyticsData = await mlModelService.getPredictionAnalytics(30);
       setAnalytics(analyticsData);
     } catch (error) {
       console.error('Failed to load analytics:', error);
+      setAnalytics(null);
+    } finally {
+      setIsLoadingAnalytics(false);
     }
   };
 
   const testModel = async () => {
     setIsTestingModel(true);
+    setTestResult(null);
     try {
       const testInput = {
         phosphorus: 15,
@@ -67,11 +77,13 @@ const MLModelIntegration: React.FC<MLModelIntegrationProps> = ({ isDarkMode }) =
         cropType: 'maize'
       };
 
+      console.log('MLModelIntegration: Sending test input:', testInput);
       const result = await mlModelService.predict(testInput);
+      console.log('MLModelIntegration: Test prediction result:', result);
       setTestResult(result);
     } catch (error) {
-      console.error('Model test failed:', error);
-      setTestResult({ error: error.message });
+      console.error('MLModelIntegration: Model test failed:', error);
+      setTestResult({ error: error.message || 'An unknown error occurred during test.' });
     } finally {
       setIsTestingModel(false);
     }
@@ -206,25 +218,28 @@ const MLModelIntegration: React.FC<MLModelIntegrationProps> = ({ isDarkMode }) =
             }`}>
               <h5 className="font-medium mb-2">Test Result:</h5>
               {testResult.error ? (
-                <p className="text-red-600 text-sm">{testResult.error}</p>
+                <div className="space-y-2 text-sm">
+                  <p className="text-red-600 font-bold">Error during prediction:</p>
+                  <p className="text-red-600 break-words">{String(testResult.error)}</p>
+                </div>
               ) : (
                 <div className="space-y-2 text-sm">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <span className="font-medium">Fertilizer:</span> {testResult.fertilizer}
+                      <span className="font-medium">Fertilizer:</span> {testResult.fertilizer || 'N/A'}
                     </div>
                     <div>
-                      <span className="font-medium">Rate:</span> {testResult.applicationRate} kg/ha
+                      <span className="font-medium">Rate:</span> {testResult.applicationRate ?? 'N/A'} kg/ha
                     </div>
                     <div>
-                      <span className="font-medium">Confidence:</span> {testResult.confidenceScore}%
+                      <span className="font-medium">Confidence:</span> {testResult.confidenceScore ?? 'N/A'}%
                     </div>
                     <div>
-                      <span className="font-medium">Processing:</span> {testResult.processingTime}ms
+                      <span className="font-medium">Processing:</span> {testResult.processingTime ?? 'N/A'}ms
                     </div>
                   </div>
                   <div>
-                    <span className="font-medium">Model Version:</span> {testResult.modelVersion}
+                    <span className="font-medium">Model Version:</span> {testResult.modelVersion || 'Unknown'}
                   </div>
                 </div>
               )}
@@ -297,40 +312,40 @@ const MLModelIntegration: React.FC<MLModelIntegrationProps> = ({ isDarkMode }) =
         </div>
       )}
 
-      {/* Deployment Instructions */}
+      {/* Troubleshooting Tips */}
       <div>
         <h4 className="font-medium mb-3 flex items-center space-x-2">
-          <Upload className="h-4 w-4 text-orange-600" />
-          <span>Deployment Instructions</span>
+          <AlertCircle className="h-4 w-4 text-orange-600" />
+          <span>Troubleshooting Tips</span>
         </h4>
         
         <div className={`p-4 rounded-lg ${isDarkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
           <div className="space-y-3 text-sm">
             <div>
-              <p className="font-medium mb-1">1. Prepare Your Model</p>
+              <p className="font-medium mb-1">1. High Response Time?</p>
               <p className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                Place your trained .joblib model files in the <code className="bg-gray-200 dark:bg-gray-600 px-1 rounded">ML_Models</code> folder
+                Your ML model server on Render might be experiencing a cold start. Wait a moment and try refreshing the status.
               </p>
             </div>
             
             <div>
-              <p className="font-medium mb-1">2. Deploy ML Server</p>
+              <p className="font-medium mb-1">2. Prediction Errors?</p>
               <p className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                Run: <code className="bg-gray-200 dark:bg-gray-600 px-1 rounded">./deployment/deploy-ml-model.sh</code>
+                Check the logs of your Supabase Edge Function (`ml-model-server`) and your Render.com ML server for detailed error messages.
               </p>
             </div>
             
             <div>
-              <p className="font-medium mb-1">3. Update Environment</p>
+              <p className="font-medium mb-1">3. API Key or Endpoint Issues?</p>
               <p className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                Set <code className="bg-gray-200 dark:bg-gray-600 px-1 rounded">ML_MODEL_ENDPOINT</code> in your environment variables
+                Ensure the `ML_MODEL_ENDPOINT` and `ML_MODEL_API_KEY` secrets are correctly set in your Supabase Edge Functions environment variables.
               </p>
             </div>
             
             <div>
-              <p className="font-medium mb-1">4. Test Integration</p>
+              <p className="font-medium mb-1">4. Data Mismatch?</p>
               <p className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                Use the "Test Model Prediction" button above to verify everything works
+                Verify that the input data format sent to the ML model matches what your model expects.
               </p>
             </div>
           </div>

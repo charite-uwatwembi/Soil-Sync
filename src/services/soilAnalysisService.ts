@@ -68,20 +68,25 @@ class SoilAnalysisService {
       confidence = 91;
       expectedYield = 22;
     } else if (Phosphorous < 10) {
-      fertilizer = "TSP";
+      fertilizer = "NPK 10-26-26";
       rate = 100;
       confidence = 89;
       expectedYield = 20;
     } else if (Potassium < 80) {
-      fertilizer = "NPK 15-15-15";
+      fertilizer = "NPK 14-35-14";
       rate = 140;
       confidence = 87;
       expectedYield = 18;
     } else if (Potassium < 120 && Nitrogen > 0.3) {
-      fertilizer = "NPK 20-10-10";
+      fertilizer = "NPK 20-20";
       rate = 130;
       confidence = 90;
       expectedYield = 17;
+    } else if (Phosphorous > 30) {
+      fertilizer = "NPK 28-28";
+      rate = 110;
+      confidence = 88;
+      expectedYield = 19;
     }
     // Organic matter adjustments
     if (organicCarbon < 1.0) {
@@ -104,41 +109,26 @@ class SoilAnalysisService {
       case 'rice':
         rate *= 1.25;
         expectedYield += 8;
-        if (Nitrogen < 0.2) {
-          fertilizer = "Urea + NPK 15-15-15";
-          confidence += 5;
-        }
         break;
       case 'maize':
         rate *= 1.1;
         expectedYield += 5;
-        if (Nitrogen < 0.25) {
-          fertilizer = "NPK 23-10-5";
-          confidence += 3;
-        }
         break;
       case 'beans':
         rate *= 0.7;
-        fertilizer = "NPK 10-20-10";
         expectedYield += 3;
         confidence += 7;
         break;
       case 'potato':
         rate *= 1.15;
-        if (Potassium < 150) {
-          fertilizer = "NPK 15-15-20";
-          confidence += 4;
-        }
         expectedYield += 6;
         break;
       case 'cassava':
         rate *= 0.8;
-        fertilizer = "NPK 15-15-15";
         expectedYield += 4;
         break;
       case 'banana':
         rate *= 1.3;
-        fertilizer = "NPK 17-6-18";
         expectedYield += 7;
         break;
     }
@@ -163,33 +153,57 @@ class SoilAnalysisService {
   // Save analysis to database
   async saveAnalysis(soilData: SoilData, recommendation: Recommendation): Promise<string> {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError) {
+        console.error('SoilAnalysisService: Error getting user for save:', userError.message);
+        throw userError;
+      }
+
+      if (!user) {
+        console.warn('SoilAnalysisService: No authenticated user found for saving analysis. Skipping save.');
+        throw new Error('No authenticated user');
+      }
+
       const analysisData: SoilAnalysis = {
-        user_id: user?.id || null,
+        user_id: user.id,
         phosphorus: soilData.Phosphorous,
         potassium: soilData.Potassium,
         nitrogen: soilData.Nitrogen,
-        organic_carbon: 0,
-        cation_exchange: 0,
-        sand_percent: 0,
-        clay_percent: 0,
-        silt_percent: 0,
-        rainfall: 0,
-        elevation: 0,
+        organic_carbon: 0, // Assuming default or placeholder
+        cation_exchange: 0, // Assuming default or placeholder
+        sand_percent: 0, // Assuming default or placeholder
+        clay_percent: 0, // Assuming default or placeholder
+        silt_percent: 0, // Assuming default or placeholder
+        rainfall: 0, // Assuming default or placeholder
+        elevation: 0, // Assuming default or placeholder
         crop_type: soilData.Crop_Type,
         recommended_fertilizer: recommendation.fertilizer,
         application_rate: Number(recommendation.rate),
         confidence_score: Number(recommendation.confidence),
         expected_yield_increase: Number(recommendation.expectedYield)
       };
+
+      console.log('SoilAnalysisService: Attempting to save analysis with data:', analysisData);
+
       const { data, error } = await supabase
         .from('soil_analyses')
         .insert([analysisData])
         .select();
-      if (error) throw error;
+
+      if (error) {
+        console.error('SoilAnalysisService: Failed to save analysis to database:', error);
+        throw error;
+      }
+
+      console.log('SoilAnalysisService: Analysis saved successfully:', data);
       return data?.[0]?.id || '';
     } catch (error) {
-      console.error('Failed to save analysis:', error);
+      console.error('SoilAnalysisService: Error in saveAnalysis function:', error);
+      // Ensure loadUserData is called only if save was successful and user is logged in, or handle its error separately
+      // For now, let's keep it here but note its dependency on App.tsx's loadUserData being correctly passed/accessible.
+      // Assuming loadUserData is available globally or passed correctly.
+      // Since this is in the service, it won't have direct access to App.tsx's loadUserData unless passed.
+      // The App.tsx handles the loadUserData() call after successful submit.
       return '';
     }
   }

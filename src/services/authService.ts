@@ -11,6 +11,7 @@ export interface AuthUser {
 class AuthService {
   // Sign up with email and password
   async signUp(email: string, password: string, fullName?: string) {
+    console.log('Auth Service: Attempting sign up for email:', email);
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -22,7 +23,8 @@ class AuthService {
     });
 
     if (error) {
-      throw new Error(error.message);
+      console.error('Auth Service: Sign up error:', error.message);
+      throw error;
     }
 
     // Create user profile
@@ -30,58 +32,80 @@ class AuthService {
       await this.createUserProfile(data.user.id, email, fullName);
     }
 
+    console.log('Auth Service: Sign up successful. User:', data.user?.id);
     return data;
   }
 
   // Sign in with email and password
   async signIn(email: string, password: string) {
+    console.log('Auth Service: Attempting sign in for email:', email);
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password
     });
 
     if (error) {
-      throw new Error(error.message);
+      console.error('Auth Service: Sign in error:', error.message);
+      throw error;
     }
 
+    // Ensure user profile exists in public.users table after successful sign-in
+    if (data.user) {
+      await this.createUserProfile(data.user.id, data.user.email!, data.user.user_metadata?.full_name);
+    }
+
+    console.log('Auth Service: Sign in successful. User:', data.user?.id);
     return data;
   }
 
   // Sign out
   async signOut() {
+    console.log('Auth Service: Attempting sign out...');
     const { error } = await supabase.auth.signOut();
     if (error) {
-      throw new Error(error.message);
+      console.error('Auth Service: Sign out error:', error.message);
+      throw error;
     }
+    console.log('Auth Service: Sign out successful.');
   }
 
   // Get current user
   async getCurrentUser(): Promise<AuthUser | null> {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return null;
-
-    return {
-      id: user.id,
-      email: user.email!,
-      fullName: user.user_metadata?.full_name || undefined,
-      avatarUrl: user.user_metadata?.avatar_url || undefined,
-      planType: 'free'
-    };
+    console.log('Auth Service: Fetching current user...');
+    const { data: { user }, error } = await supabase.auth.getUser();
+    if (error) {
+      console.error('Auth Service: Error fetching current user:', error.message);
+      return null;
+    }
+    console.log('Auth Service: Current user:', user?.id ? 'Logged In' : 'Logged Out', user?.id, 'Metadata:', user?.user_metadata);
+    if (user) {
+      return {
+        id: user.id,
+        email: user.email!,
+        fullName: user.user_metadata?.full_name,
+        avatarUrl: user.user_metadata?.avatar_url,
+        planType: user.user_metadata?.plan_type || 'free',
+      };
+    }
+    return null;
   }
 
-  // Create user profile
+  // Create or update user profile in public.users table
   private async createUserProfile(userId: string, email: string, fullName?: string) {
+    console.log('Auth Service: Creating/Updating user profile for ID:', userId);
     const { error } = await supabase
       .from('users')
-      .insert({
+      .upsert({
         id: userId,
         email,
         full_name: fullName,
-        plan_type: 'free'
-      });
+        plan_type: 'free' // Default plan type
+      }, { onConflict: 'id' }); // Conflict on 'id' means update existing row
 
     if (error) {
-      console.error('Error creating user profile:', error);
+      console.error('Auth Service: Error creating/updating user profile:', error);
+    } else {
+      console.log('Auth Service: User profile created/updated successfully.');
     }
   }
 
@@ -108,14 +132,27 @@ class AuthService {
 
   // Listen to auth state changes
   onAuthStateChange(callback: (user: AuthUser | null) => void) {
-    return supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session?.user) {
-        const authUser = await this.getCurrentUser();
-        callback(authUser);
+    console.log('Auth Service: Initializing listener for auth state changes');
+    return supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Auth Service: Auth state changed!', { event, session });
+      const supabaseUser = session ? session.user : null;
+      if (supabaseUser) {
+        const user: AuthUser = {
+          id: supabaseUser.id,
+          email: supabaseUser.email!,
+          fullName: supabaseUser.user_metadata?.full_name,
+          avatarUrl: supabaseUser.user_metadata?.avatar_url,
+          planType: supabaseUser.user_metadata?.plan_type || 'free',
+        };
+        callback(user);
       } else {
         callback(null);
       }
     });
+  }
+
+  async getSession() {
+    return await supabase.auth.getSession();
   }
 }
 

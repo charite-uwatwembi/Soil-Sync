@@ -7,7 +7,7 @@ import RecommendationCard from './components/RecommendationCard';
 import RecommendationChart from './components/RecommendationChart';
 import Sidebar from './components/Sidebar';
 import type { SoilModelInput } from './components/SoilForm';
-import SoilForm from './components/SoilForm';
+import SoilForm, { cropTypeOptions } from './components/SoilForm';
 import SoilVisualizationChart from './components/SoilVisualizationChart';
 import TopBar from './components/TopBar';
 import { authService, type AuthUser } from './services/authService';
@@ -45,37 +45,50 @@ function App() {
 
   // Initialize auth state
   useEffect(() => {
-    const initAuth = async () => {
-      try {
-          const currentUser = await authService.getCurrentUser();
-          setUser(currentUser);
-        if (currentUser) {
-          loadUserData();
-        }
-      } catch (error) {
-        setUser(null);
+    const { data: { subscription } } = authService.onAuthStateChange((user) => {
+      console.log('App.tsx: Auth state changed! User:', user);
+      setUser(user);
+      if (user) {
+        setShowAuthModal(false); // Hide modal if user signs in
+        loadUserData(); // Load history and chart data on login
+        setCurrentRecommendation(null); // Clear current summary on login
+        setCurrentSoilData(null); // Clear current summary on login
+      } else {
+        setShowAuthModal(true); // Show modal if user signs out or no session
+        setCurrentRecommendation(null); // Clear current recommendation
+        setCurrentSoilData(null); // Clear current soil data
+        setChartData([]); // Clear chart data
+        setHistoryData([]); // Clear history data explicitly on logout
       }
+    });
+
+    // Initial check (can be combined with onAuthStateChange if it fires immediately)
+    authService.getCurrentUser().then(currentUser => {
+      console.log('App.tsx: Initial getCurrentUser check. User:', currentUser);
+      setUser(currentUser);
+      if (currentUser) {
+        setShowAuthModal(false);
+        loadUserData(); // Load history and chart data on initial load if user exists
+        setCurrentRecommendation(null); // Explicitly clear current summary on initial load if user exists
+        setCurrentSoilData(null); // Explicitly clear current summary on initial load if user exists
+      } else {
+        setShowAuthModal(true);
+        setCurrentRecommendation(null); // Ensure cleared on initial load if no user
+        setCurrentSoilData(null); // Ensure cleared on initial load if no user
+        setChartData([]); // Ensure cleared on initial load if no user
+        setHistoryData([]); // Ensure cleared on initial load if no user
+      }
+    });
+
+    return () => {
+      subscription?.unsubscribe();
     };
-    initAuth();
-      const { data: { subscription } } = authService.onAuthStateChange((user) => {
-        setUser(user);
-        if (user) {
-          loadUserData();
-        } else {
-          setHistoryData([]);
-          setChartData([]);
-        }
-      });
-      return () => {
-        subscription?.unsubscribe();
-      };
   }, []);
 
   // Load user's historical data
   const loadUserData = async () => {
     try {
-      const analyses = await soilAnalysisService.getAnalysisHistory(20);
-      
+      const analyses = await soilAnalysisService.getAnalysisHistory(100);
       const historyItems: HistoryData[] = analyses.map((analysis, index) => ({
         id: index + 1,
         date: new Date(analysis.createdAt).toLocaleDateString(),
@@ -84,20 +97,15 @@ function App() {
         rate: Number(analysis.rate),
         confidence: Math.round(Number(analysis.confidence))
       }));
-
       setHistoryData(historyItems);
-
-      const chartItems = analyses.map(analysis => ({
-        date: new Date(analysis.createdAt).toLocaleDateString(),
-        fertilizer: analysis.fertilizer,
-        rate: Number(analysis.rate),
-        confidence: Math.round(Number(analysis.confidence))
-      }));
-
-      setChartData(chartItems);
+      setChartData(historyItems.map(item => ({
+        date: item.date,
+        fertilizer: item.fertilizer,
+        rate: item.rate,
+        confidence: item.confidence
+      })));
     } catch (error) {
       console.error('Failed to load user data:', error);
-      // Don't throw error, just log it - the app should continue working
     }
   };
 
@@ -109,8 +117,11 @@ function App() {
       setCurrentRecommendation(recommendation);
       setCurrentSoilData(soilData);
 
-      // Save to database or local storage
-      await soilAnalysisService.saveAnalysis(soilData, recommendation);
+      // Save to database
+      const newAnalysisId = await soilAnalysisService.saveAnalysis(soilData, recommendation);
+
+      // Refresh history from database to ensure persistence and consistency
+      await loadUserData();
 
       // Add to local state for immediate UI update
       const newHistoryItem: HistoryData = {
@@ -144,20 +155,25 @@ function App() {
 
   const handleSignOut = async () => {
     try {
-        await authService.signOut();
+      await authService.signOut();
+      // UI state updates (setUser, setShowAuthModal, setHistoryData, setChartData)
+      // are now handled by the onAuthStateChange listener in useEffect
     } catch (error) {
       console.error('Sign out failed:', error);
     }
   };
 
   const handleSensorData = (sensorData: any) => {
+    console.log('Received sensor data:', sensorData);
+    const randomCropType = cropTypeOptions[Math.floor(Math.random() * cropTypeOptions.length)].value;
+
     // Convert sensor data to soil data format (new model fields)
     const soilData: SoilData = {
       Phosphorous: sensorData.phosphorus ?? 15,
       Potassium: sensorData.potassium ?? 100,
       Nitrogen: sensorData.nitrogen ?? 0.2,
       Soil_Type: 'Loamy',
-      Crop_Type: 'maize',
+      Crop_Type: randomCropType,
       Temparature: sensorData.temparature ?? 25,
       Humidity: sensorData.humidity ?? 60,
       Moisture: sensorData.moisture ?? 30
@@ -165,6 +181,18 @@ function App() {
     // Auto-submit for analysis
     handleSoilSubmit(soilData);
   };
+
+  const checkSession = async () => {
+    const { data, error } = await authService.getSession();
+    if (!data?.session || error) {
+      setUser(null);
+      setShowAuthModal(true);
+    }
+  };
+
+  useEffect(() => {
+    checkSession();
+  }, []);
 
   return (
     <div className={`min-h-screen transition-colors duration-300 ${
@@ -254,6 +282,7 @@ function App() {
                   isDarkMode={isDarkMode} 
                   activePage={activePage}
                   onSensorData={handleSensorData}
+                  historyData={historyData}
                 />
               )}
             </div>

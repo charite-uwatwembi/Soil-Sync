@@ -1,14 +1,14 @@
 import {
-    BarChart3,
-    Bell,
-    Database,
-    FileText,
-    HelpCircle,
-    Home,
-    Settings,
-    Sprout,
-    TrendingUp,
-    User
+  BarChart3,
+  Bell,
+  Database,
+  FileText,
+  HelpCircle,
+  Home,
+  Settings,
+  Sprout,
+  TrendingUp,
+  User
 } from 'lucide-react';
 import React from 'react';
 import type { AuthUser } from '../services/authService';
@@ -28,6 +28,8 @@ const Sidebar: React.FC<SidebarProps> = ({
   activePage, 
   onPageChange 
 }) => {
+  console.log("Sidebar: User prop received:", user);
+  console.log("Sidebar: User fullName:", user?.fullName);
   const menuItems = [
     { icon: Home, label: 'Dashboard', page: 'Dashboard' },
     { icon: BarChart3, label: 'Analytics', page: 'Analytics' },
@@ -69,13 +71,13 @@ const Sidebar: React.FC<SidebarProps> = ({
             <User className="h-5 w-5 text-white" />
           </div>
           {!isCollapsed && (
-            <div>
-              <p className="font-medium">
-                {user ? user.fullName || user.email.split('@')[0] : 'Sign In Required'}
-              </p>
-              <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                {user ? user.planType.charAt(0).toUpperCase() + user.planType.slice(1) + ' Plan' : ''}
-              </p>
+            <div className="flex flex-col flex-1">
+              <span className={`font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                {user?.fullName || user?.email || 'Guest'}
+              </span>
+              <span className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                {user?.planType || 'Free Plan'}
+              </span>
             </div>
           )}
         </div>
