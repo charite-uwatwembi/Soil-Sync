@@ -53,7 +53,7 @@ Experience SoilSync live here: [https://soil-sync-proj.vercel.app/](https://soil
 ## 📸 Screenshots
 
 - **Dashboard Overview (Light Theme):** ![Dashboard Screenshot](public/dashboard.png)
-- **Dashboard Overview (Dark Theme):** ![Dashboard Screenshot Dark](public/dashboardindark.png)
+- **Dashboard Overview (Dark Theme):** ![Dashboard Screenshot Dark](public/image.png)
 - **AgriNews & recommendation history Page:** ![AgriNews Screenshot](public/news.png)
 - **Soil Analysis Page:** ![Soil Analysis Screenshot](public/analysis.png)
 - **IoT Simulator:** ![IoT Simulator Screenshot](public/iot.png)
