@@ -37,14 +37,14 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const newIsDark = !prevIsDark;
       console.log('ThemeContext toggleTheme: Toggling from', prevIsDark, 'to', newIsDark);
       if (newIsDark) {
-        document.documentElement.classList.add('dark');
-        localStorage.setItem('theme', 'dark');
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
         console.log('ThemeContext toggleTheme: Added dark class, set localStorage to dark.');
-      } else {
-        document.documentElement.classList.remove('dark');
-        localStorage.setItem('theme', 'light');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
         console.log('ThemeContext toggleTheme: Removed dark class, set localStorage to light.');
-      }
+    }
       console.log('ThemeContext toggleTheme: document.documentElement.classList:', document.documentElement.classList.toString());
       return newIsDark;
     });

@@ -42,7 +42,7 @@ const Hero: React.FC<HeroProps> = ({ onGetStarted }) => {
               Get Started <ArrowRight className="ml-2 -mr-1 h-5 w-5" />
             </button>
             <button
-              onClick={() => alert('Watch Demo clicked!')}
+              onClick={() => window.open('https://youtu.be/hD6XlhNK6UI', '_blank')}
               className="flex items-center justify-center px-8 py-3 border border-green-600 text-base font-medium rounded-md text-green-700 bg-white hover:bg-green-50 md:py-4 md:text-lg md:px-10 transition duration-300 ease-in-out shadow-md dark:border-green-400 dark:text-green-300 dark:bg-gray-800 dark:hover:bg-gray-700"
             >
               <Play className="mr-2 -ml-1 h-5 w-5" /> Watch Demo

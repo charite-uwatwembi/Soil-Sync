@@ -53,8 +53,7 @@ Soil-Sync/
 
 ## 📺 Video Demo
 
-[Watch a demo of SoilSync on YouTube](https://www.youtube.com/your-second-video-demo-link-here) <!-- Placeholder for your second video demo link -->
-
+[Watch a demo of SoilSync on YouTube](https://youtu.be/hD6XlhNK6UI)
 ---
 
 ## 🌐 Live Demo
