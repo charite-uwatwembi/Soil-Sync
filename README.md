@@ -200,7 +200,7 @@ npm run dev
 - **Soil Analysis Page:** ![Soil Analysis Screenshot](public/analysis.png)
 - **IoT Simulator:** ![IoT Simulator Screenshot](public/iot.png)
 - **Sms Service:** ![sms](public/sms.png)
-- **Fertilizer Recommendation with internet:** ![Fertilizer Recommendation Screenshot](/dashboard.png)
+- **Fertilizer Recommendation without internet:** ![Fertilizer Recommendation Screenshot](/public/phone.png)
 -->
 
 ---
