@@ -196,10 +196,11 @@ npm run dev
 
 - **Dashboard Overview (Light Theme):** ![Dashboard Screenshot](public/dashboard.png)
 - **Dashboard Overview (Dark Theme):** ![Dashboard Screenshot Dark](public/dashboardindark.png)
-- **AgriNews Page:** ![AgriNews Screenshot](public/news.png)
-- **Soil Analysis Page:** ![Soil Analysis Screenshot](public/soil_analysis.png)
-- **IoT Simulator:** ![IoT Simulator Screenshot](public/iot_simulator.png)
-- **Fertilizer Recommendation:** ![Fertilizer Recommendation Screenshot](/dashboard.png)
+- **AgriNews & recommendation history Page:** ![AgriNews Screenshot](public/news.png)
+- **Soil Analysis Page:** ![Soil Analysis Screenshot](public/analysis.png)
+- **IoT Simulator:** ![IoT Simulator Screenshot](public/iot.png)
+- **Sms Service:** ![sms](public/sms.png)
+- **Fertilizer Recommendation with internet:** ![Fertilizer Recommendation Screenshot](/dashboard.png)
 -->
 
 ---
