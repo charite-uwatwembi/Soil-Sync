@@ -192,4 +192,28 @@ npm run dev
 
 ---
 
+## 📸 Screenshots
+
+- **Dashboard Overview (Light Theme):** ![Dashboard Screenshot](public/dashboard.png)
+- **Dashboard Overview (Dark Theme):** ![Dashboard Screenshot Dark](public/dashboardindark.png)
+- **AgriNews Page:** ![AgriNews Screenshot](public/news.png)
+- **Soil Analysis Page:** ![Soil Analysis Screenshot](public/soil_analysis.png)
+- **IoT Simulator:** ![IoT Simulator Screenshot](public/iot_simulator.png)
+- **Fertilizer Recommendation:** ![Fertilizer Recommendation Screenshot](/dashboard.png)
+-->
+
+---
+
+## 📺 Video Demo
+
+[Watch a demo of SoilSync on YouTube](https://www.youtube.com/your-second-video-demo-link-here) <!-- Placeholder for your second video demo link -->
+
+---
+
+## 🌐 Live Demo
+
+Experience SoilSync live here: [https://soil-sync-proj.vercel.app/](https://soil-sync-proj.vercel.app/)
+
+---
+
 **Happy Farming with SoilSync! 🌱🤖**
