@@ -1,14 +1,16 @@
 import {
   BarChart3,
   Bell,
+  ChevronDown,
   Database,
   FileText,
   HelpCircle,
-  Settings,
   Sprout,
-  TrendingUp
+  TrendingUp,
+  User
 } from 'lucide-react';
-import React from 'react';
+import React, { useState } from 'react';
+import type { AuthUser } from '../services/authService';
 import DataTable from './DataTable';
 import IoTSimulator from './IoTSimulator';
 import MLModelIntegration from './MLModelIntegration';
@@ -19,11 +21,14 @@ interface NavigationPagesProps {
   activePage: string;
   onSensorData?: (data: any) => void;
   historyData: HistoryData[];
+  user: AuthUser | null;
 }
 
-const NavigationPages: React.FC<NavigationPagesProps> = ({ isDarkMode, activePage, onSensorData, historyData }) => {
+const NavigationPages: React.FC<NavigationPagesProps> = ({ isDarkMode, activePage, onSensorData, historyData, user }) => {
   const renderPage = () => {
     switch (activePage) {
+      case 'Dashboard':
+        return <DashboardPage isDarkMode={isDarkMode} />;
       case 'Analytics':
         return <AnalyticsPage isDarkMode={isDarkMode} />;
       case 'Crops':
@@ -37,7 +42,7 @@ const NavigationPages: React.FC<NavigationPagesProps> = ({ isDarkMode, activePag
       case 'Alerts':
         return <AlertsPage isDarkMode={isDarkMode} />;
       case 'Settings':
-        return <SettingsPage isDarkMode={isDarkMode} />;
+        return <ProfilePage isDarkMode={isDarkMode} user={user} />;
       case 'Help':
         return <HelpPage isDarkMode={isDarkMode} />;
       default:
@@ -47,6 +52,14 @@ const NavigationPages: React.FC<NavigationPagesProps> = ({ isDarkMode, activePag
 
   return renderPage();
 };
+
+// Dashboard Page (Placeholder - assuming it exists or will be created)
+const DashboardPage: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }) => (
+  <div className="space-y-6">
+    <h2 className="text-2xl font-bold">Dashboard</h2>
+    <p className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Welcome to your dashboard!</p>
+  </div>
+);
 
 // Analytics Page
 const AnalyticsPage: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }) => (
@@ -157,10 +170,10 @@ const ReportsPage: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }) => (
     
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       {[
-        { title: 'Monthly Soil Analysis Report', date: '2024-01-15', type: 'PDF', size: '2.4 MB' },
-        { title: 'Fertilizer Usage Summary', date: '2024-01-10', type: 'Excel', size: '1.8 MB' },
-        { title: 'Yield Comparison Report', date: '2024-01-08', type: 'PDF', size: '3.1 MB' },
-        { title: 'Cost-Benefit Analysis', date: '2024-01-05', type: 'PDF', size: '1.2 MB' }
+        { title: 'Monthly Soil Analysis Report', date: '2025-01-15', type: 'PDF', size: '2.4 MB' },
+        { title: 'Fertilizer Usage Summary', date: '2025-01-10', type: 'Excel', size: '1.8 MB' },
+        { title: 'Yield Comparison Report', date: '2025-01-08', type: 'PDF', size: '3.1 MB' },
+        { title: 'Cost-Benefit Analysis', date: '2025-01-05', type: 'PDF', size: '1.2 MB' }
       ].map((report, index) => (
         <div key={index} className={`p-6 rounded-xl border transition-all hover:shadow-lg ${
           isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
@@ -239,80 +252,170 @@ const AlertsPage: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }) => (
   </div>
 );
 
-// Settings Page
-const SettingsPage: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }) => (
+// Profile Page (formerly SettingsPage)
+const ProfilePage: React.FC<{ isDarkMode: boolean; user: AuthUser | null }> = ({ isDarkMode, user }) => (
   <div className="space-y-6">
     <div className="flex items-center space-x-3 mb-6">
-      <Settings className="h-6 w-6 text-gray-600" />
-      <h2 className="text-2xl font-bold">Settings</h2>
+      <User className="h-6 w-6 text-blue-600" />
+      <h2 className="text-2xl font-bold">My Profile</h2>
     </div>
+
     
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div className={`p-6 rounded-xl border ${
-        isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
-      }`}>
-        <h3 className="font-semibold mb-4">Account Settings</h3>
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">Email</label>
-            <input type="email" className={`w-full px-3 py-2 rounded-lg border ${
-              isDarkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'
-            }`} placeholder="user@example.com" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Full Name</label>
-            <input type="text" className={`w-full px-3 py-2 rounded-lg border ${
-              isDarkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'
-            }`} placeholder="John Doe" />
-          </div>
+
+    <div className={`p-6 rounded-xl border ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
+      <h3 className="text-lg font-semibold mb-4">Plan Details</h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Current Plan</label>
+          <p className="mt-1 text-lg text-gray-900 dark:text-white">{user?.planType || 'Free Plan'}</p>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Membership Status</label>
+          <p className="mt-1 text-lg text-green-600 dark:text-green-400">Active</p>
         </div>
       </div>
-      
-      <div className={`p-6 rounded-xl border ${
-        isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
-      }`}>
-        <h3 className="font-semibold mb-4">Notification Preferences</h3>
-        <div className="space-y-3">
-          {['Email notifications', 'SMS alerts', 'Push notifications', 'Weekly reports'].map((item, index) => (
-            <label key={index} className="flex items-center space-x-2">
-              <input type="checkbox" className="rounded" defaultChecked />
-              <span className="text-sm">{item}</span>
-            </label>
-          ))}
-        </div>
+      <div className="mt-6 flex justify-end">
+        <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium transition-colors">
+          Upgrade Plan
+        </button>
+      </div>
+    </div>
+
+    <div className={`p-6 rounded-xl border ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
+      <h3 className="text-lg font-semibold mb-4">Security Settings</h3>
+      <div className="flex justify-end">
+        <button className="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-md font-medium transition-colors mr-2">
+          Change Password
+        </button>
+        <button className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md font-medium transition-colors">
+          Delete Account
+        </button>
       </div>
     </div>
   </div>
 );
 
 // Help Page
-const HelpPage: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }) => (
-  <div className="space-y-6">
-    <div className="flex items-center space-x-3 mb-6">
-      <HelpCircle className="h-6 w-6 text-blue-600" />
-      <h2 className="text-2xl font-bold">Help & Support</h2>
-    </div>
+const HelpPage: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }) => {
+  const [expandedItem, setExpandedItem] = useState<string | null>(null);
+
+  const helpItems = [
+    {
+      title: 'Getting Started',
+      description: 'Learn how to use SoilSync for the first time',
+      content: (
+        <p>
+          Welcome to SoilSync! To get started, first register for an account or sign in. Once logged in, you can explore your dashboard to access features like soil data analysis, crop management, and more. Begin by navigating to the 'Soil Data' page to input your first sensor readings or manually enter soil parameters.
+        </p>
+      ),
+    },
+    {
+      title: 'Soil Analysis Guide',
+      description: 'Understanding soil parameters and recommendations',
+      content: (
+        <p>
+          Our soil analysis provides insights into key parameters like pH, nitrogen, phosphorus, and potassium (NPK), along with temperature, humidity, and moisture. Based on these readings, SoilSync generates personalized recommendations for crop types and fertilizer application to optimize your yield and promote sustainable farming practices.
+        </p>
+      ),
+    },
+    {
+      title: 'IoT Sensor Setup',
+      description: 'How to connect and configure your sensors',
+      content: (
+        <p>
+          Connecting your IoT sensors to SoilSync is straightforward. Navigate to the 'Soil Data' page and locate the 'IoT Simulator' section. Here, you will find instructions and credentials to link your physical sensors. Ensure your sensors are properly calibrated and have stable network connectivity for accurate data transmission.
+        </p>
+      ),
+    },
+    {
+      title: 'SMS Integration',
+      description: 'Setting up USSD and SMS notifications',
+      content: (
+        <p>
+          Stay updated with crucial farm insights through our SMS integration. Go to the 'Soil Data' page and find the 'SMS Service' section to configure your preferences. You can set up alerts for low soil moisture, optimal fertilizer application times, or pest warnings directly to your mobile device via SMS or USSD.
+        </p>
+      ),
+    },
+    {
+      title: 'Troubleshooting',
+      description: 'Common issues and their solutions',
+      content: (
+        <p>
+          Experiencing issues? Check our common troubleshooting tips. If your sensor data isn't updating, verify its battery and network connection. For login problems, try resetting your password. If you encounter persistent technical difficulties, please utilize the 'Contact Support' option for direct assistance.
+        </p>
+      ),
+    },
+    {
+      title: 'Contact Support',
+      description: 'Get help from our technical team',
+      content: (
+        <p>
+          Need personalized assistance? Our dedicated technical support team is here to help. You can reach us via email at support@soilsync.com or call our hotline at +250-789-951-064. Our support hours are Monday to Friday, 9 AM to 5 PM local time.
+        </p>
+      ),
+    },
+  ];
+
+  const toggleItem = (title: string) => {
+    setExpandedItem(expandedItem === title ? null : title);
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center space-x-3 mb-6">
+        <HelpCircle className="h-6 w-6 text-blue-600" />
+        <h2 className="text-2xl font-bold">Help & Support</h2>
+      </div>
     
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      {[
-        { title: 'Getting Started', description: 'Learn how to use SoilSync for the first time' },
-        { title: 'Soil Analysis Guide', description: 'Understanding soil parameters and recommendations' },
-        { title: 'IoT Sensor Setup', description: 'How to connect and configure your sensors' },
-        { title: 'SMS Integration', description: 'Setting up USSD and SMS notifications' },
-        { title: 'Troubleshooting', description: 'Common issues and their solutions' },
-        { title: 'Contact Support', description: 'Get help from our technical team' }
-      ].map((item, index) => (
-        <div key={index} className={`p-6 rounded-xl border transition-all hover:shadow-lg cursor-pointer ${
-          isDarkMode ? 'bg-gray-800 border-gray-700 hover:bg-gray-700' : 'bg-white border-gray-200 hover:bg-gray-50'
-        }`}>
-          <h3 className="font-semibold mb-2">{item.title}</h3>
-          <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-            {item.description}
-          </p>
-        </div>
-      ))}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {helpItems.map((item, index) => (
+          <div key={index} className={`rounded-xl border transition-all overflow-hidden ${
+            isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+          }`}>
+            <button
+              onClick={() => toggleItem(item.title)}
+              className={`w-full text-left p-6 flex justify-between items-center transition-all duration-200 ${
+                isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'
+              }`}
+            >
+              <div>
+                <h3 className="font-semibold mb-1">{item.title}</h3>
+                <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                  {item.description}
+                </p>
+              </div>
+              <ChevronDown className={`h-5 w-5 transition-transform duration-200 ${
+                expandedItem === item.title ? 'rotate-180' : 'rotate-0'
+              }`} />
+            </button>
+
+            {expandedItem === item.title && (
+              <div className={`p-6 pt-0 ${
+                isDarkMode ? 'text-gray-300' : 'text-gray-700'
+              }`}>
+                {item.content}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
     </div>
-  </div>
-);
+  );
+};
+
+interface HistoryData {
+  id: string;
+  date: string;
+  soilType: string;
+  ph: number;
+  nitrogen: number;
+  phosphorus: number;
+  potassium: number;
+  temperature: number;
+  humidity: number;
+  moisture: number;
+  cropRecommendation: string;
+  fertilizerRecommendation: string;
+}
 
 export default NavigationPages;

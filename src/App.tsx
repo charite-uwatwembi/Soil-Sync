@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import AgriNews from './components/AgriNews';
 import AuthModal from './components/AuthModal';
 import DataTable from './components/DataTable';
+import LandingPage from './components/LandingPage';
 import NavigationPages from './components/NavigationPages';
 import RecommendationCard from './components/RecommendationCard';
 import RecommendationChart from './components/RecommendationChart';
@@ -10,6 +11,7 @@ import type { SoilModelInput } from './components/SoilForm';
 import SoilForm, { cropTypeOptions } from './components/SoilForm';
 import SoilVisualizationChart from './components/SoilVisualizationChart';
 import TopBar from './components/TopBar';
+import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import { authService, type AuthUser } from './services/authService';
 import { soilAnalysisService, type Recommendation, type SoilData } from './services/soilAnalysisService';
 
@@ -23,7 +25,7 @@ interface HistoryData {
 }
 
 function App() {
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const { isDark: isDarkMode, toggleTheme: toggleDarkMode } = useTheme();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [activePage, setActivePage] = useState('Dashboard');
   const [currentRecommendation, setCurrentRecommendation] = useState<Recommendation | null>(null);
@@ -38,15 +40,16 @@ function App() {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [authMode, setAuthMode] = useState<'signIn' | 'signUp' | 'forgotPassword'>('signIn');
+  const [isLoadingAuth, setIsLoadingAuth] = useState(true);
 
-  const toggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode);
-  };
+  console.log('App.tsx: Initial user state:', user);
 
   // Initialize auth state
   useEffect(() => {
+    console.log('App.tsx: useEffect - Setting up auth state listener.');
     const { data: { subscription } } = authService.onAuthStateChange((user) => {
-      console.log('App.tsx: Auth state changed! User:', user);
+      console.log('App.tsx: Auth state changed! User (from listener):', user);
       setUser(user);
       if (user) {
         setShowAuthModal(false); // Hide modal if user signs in
@@ -54,17 +57,17 @@ function App() {
         setCurrentRecommendation(null); // Clear current summary on login
         setCurrentSoilData(null); // Clear current summary on login
       } else {
-        setShowAuthModal(true); // Show modal if user signs out or no session
         setCurrentRecommendation(null); // Clear current recommendation
         setCurrentSoilData(null); // Clear current soil data
         setChartData([]); // Clear chart data
         setHistoryData([]); // Clear history data explicitly on logout
       }
+      console.log('App.tsx: User state AFTER listener update:', user);
     });
 
     // Initial check (can be combined with onAuthStateChange if it fires immediately)
     authService.getCurrentUser().then(currentUser => {
-      console.log('App.tsx: Initial getCurrentUser check. User:', currentUser);
+      console.log('App.tsx: Initial getCurrentUser check. User (from promise):', currentUser);
       setUser(currentUser);
       if (currentUser) {
         setShowAuthModal(false);
@@ -72,18 +75,35 @@ function App() {
         setCurrentRecommendation(null); // Explicitly clear current summary on initial load if user exists
         setCurrentSoilData(null); // Explicitly clear current summary on initial load if user exists
       } else {
-        setShowAuthModal(true);
         setCurrentRecommendation(null); // Ensure cleared on initial load if no user
         setCurrentSoilData(null); // Ensure cleared on initial load if no user
         setChartData([]); // Ensure cleared on initial load if no user
         setHistoryData([]); // Ensure cleared on initial load if no user
       }
+      setIsLoadingAuth(false); // Set loading to false after initial check
+      console.log('App.tsx: User state AFTER initial getCurrentUser check:', currentUser);
     });
 
     return () => {
-      subscription?.unsubscribe();
+      console.log('App.tsx: useEffect cleanup - Unsubscribing auth state listener.');
+      subscription.unsubscribe();
     };
   }, []);
+
+  const handleAuthSuccess = () => {
+    setShowAuthModal(false);
+    // Optionally redirect or update UI after successful authentication
+  };
+
+  const openAuthModal = (mode: 'signIn' | 'signUp' | 'forgotPassword') => {
+    console.log('App.tsx: openAuthModal called with mode:', mode);
+    setAuthMode(mode);
+    setShowAuthModal(true);
+    console.log('App.tsx: showAuthModal set to true.');
+  };
+
+  console.log('App.tsx: User state before conditional render:', user);
+  console.log('App.tsx: showAuthModal state before rendering AuthModal:', showAuthModal);
 
   // Load user's historical data
   const loadUserData = async () => {
@@ -182,147 +202,157 @@ function App() {
     handleSoilSubmit(soilData);
   };
 
-  const checkSession = async () => {
-    const { data, error } = await authService.getSession();
-    if (!data?.session || error) {
-      setUser(null);
-      setShowAuthModal(true);
-    }
+  const toggleSidebar = () => {
+    setIsCollapsed(!isCollapsed);
   };
 
-  useEffect(() => {
-    checkSession();
-  }, []);
+  if (isLoadingAuth) {
+    return (
+      <div className={`min-h-screen flex items-center justify-center ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
+        <p>Loading authentication state...</p>
+      </div>
+    );
+  }
 
   return (
-    <div className={`min-h-screen transition-colors duration-300 ${
-      isDarkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'
-    }`}>
-      {/* If not authenticated, show only AuthModal full screen */}
+    <ThemeProvider>
+      {/* Render LandingPage if not authenticated, else render main app */}
       {!user ? (
-        <AuthModal
-          isOpen={true}
-          onClose={() => {}}
-          onAuthSuccess={() => {
-            setShowAuthModal(false);
-            loadUserData();
-          }}
-          isDarkMode={isDarkMode}
-        />
+        <div className={`min-h-screen flex items-center justify-center ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
+          <LandingPage
+            isDarkMode={isDarkMode}
+            onGetStarted={() => openAuthModal('signIn')}
+            isAuthenticated={!!user}
+            user={user}
+            onSignOut={handleSignOut}
+            toggleDarkMode={toggleDarkMode}
+          />
+        </div>
       ) : (
-        <>
-          <Sidebar 
-            isCollapsed={isCollapsed} 
-            isDarkMode={isDarkMode} 
+        <div className={`flex min-h-screen ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
+          <Sidebar
+            isCollapsed={isCollapsed}
+            isDarkMode={isDarkMode}
             user={user}
             activePage={activePage}
             onPageChange={setActivePage}
-          />
-          <TopBar 
-            isCollapsed={isCollapsed}
-            setIsCollapsed={setIsCollapsed}
-            isDarkMode={isDarkMode}
-            toggleDarkMode={toggleDarkMode}
-            user={user}
-            onSignIn={() => setShowAuthModal(true)}
             onSignOut={handleSignOut}
           />
-          <main className={`transition-all duration-300 ${
-            isCollapsed ? 'ml-16' : 'ml-64'
-          } mt-16 p-6`}>
-            <div className="max-w-7xl mx-auto">
-              {activePage === 'Dashboard' ? (
-                <div className="space-y-6">
-                  {/* Top Row - Current Recommendation */}
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div className="lg:col-span-2">
-                      <RecommendationCard 
+          <div className={`flex flex-col flex-1 transition-all duration-300 ${isCollapsed ? 'ml-16' : 'ml-64'}`}>
+            <TopBar
+              isCollapsed={isCollapsed}
+              setIsCollapsed={setIsCollapsed}
+              isDarkMode={isDarkMode}
+              toggleDarkMode={toggleDarkMode}
+              user={user}
+              onSignIn={() => openAuthModal('signIn')}
+              onSignOut={handleSignOut}
+              toggleSidebar={toggleSidebar}
+              isSidebarOpen={isCollapsed}
+            />
+            <main className={`flex-1 transition-all duration-300 p-6 mt-16`}>
+              <div className="max-w-7xl mx-auto">
+                {activePage === 'Dashboard' ? (
+                  <div className="space-y-6">
+                    {/* Top Row - Current Recommendation */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                      <div className="lg:col-span-2">
+                        <RecommendationCard
+                          isDarkMode={isDarkMode}
+                          recommendation={currentRecommendation}
+                        />
+                      </div>
+                      <div>
+                        <SoilForm
+                          isDarkMode={isDarkMode}
+                          onSubmit={handleSoilSubmit}
+                          loading={loading}
+                        />
+                      </div>
+                    </div>
+                    {/* Middle Row - Soil Visualization */}
+                    <div>
+                      <SoilVisualizationChart
                         isDarkMode={isDarkMode}
+                        soilData={currentSoilData}
                         recommendation={currentRecommendation}
                       />
                     </div>
+                    {/* Third Row - Chart and News */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                      <div className="lg:col-span-2">
+                        <RecommendationChart
+                          isDarkMode={isDarkMode}
+                          data={chartData}
+                        />
+                      </div>
+                      <div>
+                        <AgriNews isDarkMode={isDarkMode} />
+                      </div>
+                    </div>
+                    {/* Bottom Row - Data Table */}
                     <div>
-                      <SoilForm 
+                      <DataTable
                         isDarkMode={isDarkMode}
-                        onSubmit={handleSoilSubmit}
-                        loading={loading}
+                        data={historyData}
                       />
                     </div>
                   </div>
-                  {/* Middle Row - Soil Visualization */}
-                  <div>
-                    <SoilVisualizationChart 
-                      isDarkMode={isDarkMode}
-                      soilData={currentSoilData}
-                      recommendation={currentRecommendation}
-                    />
+                ) : (
+                  <NavigationPages
+                    isDarkMode={isDarkMode}
+                    activePage={activePage}
+                    onSensorData={handleSensorData}
+                    historyData={historyData}
+                  />
+                )}
+              </div>
+            </main>
+            {/* Footer */}
+            <footer className={`flex-shrink-0 transition-all duration-300 ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border-t mt-auto`}>
+              <div className="max-w-7xl mx-auto px-6 py-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-6">
+                    <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                      © 2024 SoilSync. Powered by AI for Smart Agriculture.
+                    </p>
                   </div>
-                  {/* Third Row - Chart and News */}
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div className="lg:col-span-2">
-                      <RecommendationChart 
-                        isDarkMode={isDarkMode}
-                        data={chartData}
-                      />
-                    </div>
-                    <div>
-                      <AgriNews isDarkMode={isDarkMode} />
-                    </div>
+                  <div className="flex items-center space-x-4">
+                    <button className={`text-sm hover:text-green-600 transition-colors ${
+                      isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                    }`}>
+                      Privacy Policy
+                    </button>
+                    <button className={`text-sm hover:text-green-600 transition-colors ${
+                      isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                    }`}>
+                      Terms of Service
+                    </button>
+                    <button className={`text-sm hover:text-green-600 transition-colors ${
+                      isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                    }`}>
+                      Support
+                    </button>
                   </div>
-                  {/* Bottom Row - Data Table */}
-                  <div>
-                    <DataTable 
-                      isDarkMode={isDarkMode}
-                      data={historyData}
-                    />
-                  </div>
-                </div>
-              ) : (
-                <NavigationPages 
-                  isDarkMode={isDarkMode} 
-                  activePage={activePage}
-                  onSensorData={handleSensorData}
-                  historyData={historyData}
-                />
-              )}
-            </div>
-          </main>
-          {/* Footer */}
-          <footer className={`${
-            isCollapsed ? 'ml-16' : 'ml-64'
-          } transition-all duration-300 ${
-            isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
-          } border-t mt-12`}>
-            <div className="max-w-7xl mx-auto px-6 py-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-6">
-                  <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                    © 2024 SoilSync. Powered by AI for Smart Agriculture.
-                  </p>
-                </div>
-                <div className="flex items-center space-x-4">
-                  <button className={`text-sm hover:text-green-600 transition-colors ${
-                    isDarkMode ? 'text-gray-400' : 'text-gray-600'
-                  }`}>
-                    Privacy Policy
-                  </button>
-                  <button className={`text-sm hover:text-green-600 transition-colors ${
-                    isDarkMode ? 'text-gray-400' : 'text-gray-600'
-                  }`}>
-                    Terms of Service
-                  </button>
-                  <button className={`text-sm hover:text-green-600 transition-colors ${
-                    isDarkMode ? 'text-gray-400' : 'text-gray-600'
-                  }`}>
-                    Support
-                  </button>
                 </div>
               </div>
-            </div>
-          </footer>
-        </>
+            </footer>
+          </div>
+        </div>
       )}
-    </div>
+
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        mode={authMode}
+        onAuthSuccess={() => {
+          setShowAuthModal(false);
+          loadUserData();
+        }}
+        onModeChange={setAuthMode}
+        isDarkMode={isDarkMode}
+      />
+    </ThemeProvider>
   );
 }
 

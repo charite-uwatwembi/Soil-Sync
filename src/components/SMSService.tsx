@@ -11,7 +11,7 @@ const SMSService: React.FC<SMSServiceProps> = ({ isDarkMode }) => {
   const [testResponse, setTestResponse] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [smsHistory, setSmsHistory] = useState<SMSMessage[]>([]);
-  const [testPhone, setTestPhone] = useState('+250788123456');
+  const [testPhone, setTestPhone] = useState('+1 856 595 3915');
 
   // Load SMS history on component mount
   useEffect(() => {

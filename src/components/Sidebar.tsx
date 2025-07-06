@@ -1,14 +1,13 @@
 import {
-  BarChart3,
-  Bell,
-  Database,
-  FileText,
-  HelpCircle,
-  Home,
-  Settings,
-  Sprout,
-  TrendingUp,
-  User
+    BarChart3,
+    Bell,
+    Database,
+    FileText,
+    HelpCircle,
+    Home,
+    Sprout,
+    TrendingUp,
+    User
 } from 'lucide-react';
 import React from 'react';
 import type { AuthUser } from '../services/authService';
@@ -38,7 +37,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     { icon: TrendingUp, label: 'Reports', page: 'Reports' },
     { icon: FileText, label: 'History', page: 'History' },
     { icon: Bell, label: 'Alerts', page: 'Alerts' },
-    { icon: Settings, label: 'Settings', page: 'Settings' },
+    { icon: User, label: 'Profile', page: 'Settings' },
     { icon: HelpCircle, label: 'Help', page: 'Help' }
   ];
 
@@ -55,7 +54,9 @@ const Sidebar: React.FC<SidebarProps> = ({
           </div>
           {!isCollapsed && (
             <div>
-              <h1 className="text-lg font-bold text-green-600">SoilSync</h1>
+              <h1 className="text-lg font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
+                SoilSync
+              </h1>
               <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                 Smart Agriculture
               </p>
