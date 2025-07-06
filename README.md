@@ -39,7 +39,29 @@ Soil-Sync/
 ├── README.md           # This file
 └── ...
 ```
+## 📸 Screenshots
 
+- **Dashboard Overview (Light Theme):** ![Dashboard Screenshot](public/dashboard.png)
+- **Dashboard Overview (Dark Theme):** ![Dashboard Screenshot Dark](public/dashboardindark.png)
+- **AgriNews & recommendation history Page:** ![AgriNews Screenshot](public/news.png)
+- **Soil Analysis Page:** ![Soil Analysis Screenshot](public/analysis.png)
+- **IoT Simulator:** ![IoT Simulator Screenshot](public/iot.png)
+- **Sms Service:** ![sms](public/sms.png)
+- **Fertilizer Recommendation without internet:** ![Fertilizer Recommendation Screenshot](/public/phone.png)
+- **SignIn & SignUp:** ![SignIn & SignUp page](/public/signin.png)
+---
+
+## 📺 Video Demo
+
+[Watch a demo of SoilSync on YouTube](https://www.youtube.com/your-second-video-demo-link-here) <!-- Placeholder for your second video demo link -->
+
+---
+
+## 🌐 Live Demo
+
+Experience SoilSync live here: [https://soil-sync-proj.vercel.app/](https://soil-sync-proj.vercel.app/)
+
+---
 ---
 
 ## ⚙️ Tech Stack
@@ -64,7 +86,7 @@ Soil-Sync/
 
 ### 2. Clone & Install
 ```bash
-git clone <https://github.com/charite-uwatwembi/Soil-Sync.git >
+git clone https://github.com/charite-uwatwembi/Soil-Sync.git
 cd Soil-Sync
 npm install
 ```
@@ -189,32 +211,6 @@ npm run dev
 - Email: support@soilsync.rw
 - Phone: +1 856 595 3915
 - Hosted Link: [soilsync.rw](https://soil-sync-proj.vercel.app/)
-
----
-
-## 📸 Screenshots
-
-- **Dashboard Overview (Light Theme):** ![Dashboard Screenshot](public/dashboard.png)
-- **Dashboard Overview (Dark Theme):** ![Dashboard Screenshot Dark](public/dashboardindark.png)
-- **AgriNews & recommendation history Page:** ![AgriNews Screenshot](public/news.png)
-- **Soil Analysis Page:** ![Soil Analysis Screenshot](public/analysis.png)
-- **IoT Simulator:** ![IoT Simulator Screenshot](public/iot.png)
-- **Sms Service:** ![sms](public/sms.png)
-- **Fertilizer Recommendation without internet:** ![Fertilizer Recommendation Screenshot](/public/phone.png)
-- **SignIn & SignUp:** ![SignIn & SignUp page](/public/signin.png)
--->
-
----
-
-## 📺 Video Demo
-
-[Watch a demo of SoilSync on YouTube](https://www.youtube.com/your-second-video-demo-link-here) <!-- Placeholder for your second video demo link -->
-
----
-
-## 🌐 Live Demo
-
-Experience SoilSync live here: [https://soil-sync-proj.vercel.app/](https://soil-sync-proj.vercel.app/)
 
 ---
 
