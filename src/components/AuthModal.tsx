@@ -183,7 +183,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthSuccess, i
             {/* Social Sign-in Buttons */}
             <div className="space-y-3">
               <button className="w-full flex items-center justify-center py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">
-                <img src="/public/google-icon.svg" alt="Google" className="h-5 w-5 mr-2" />
+                <img src="/google-icon.svg" alt="Google" className="h-5 w-5 mr-2" />
                 Sign in with Google
               </button>
               
