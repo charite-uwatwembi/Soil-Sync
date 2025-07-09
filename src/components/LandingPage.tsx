@@ -5,7 +5,6 @@ import Footer from './Footer';
 import Header from './Header';
 import Hero from './Hero';
 import Pricing from './Pricing';
-import { User } from '../types';
 
 interface LandingPageProps {
   isDarkMode: boolean;
@@ -30,7 +29,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, onGetStarted, isA
 
       <main className="flex-1">
         <Hero onGetStarted={onGetStarted} isDarkMode={isDarkMode} />
-        <Features isDarkMode={isDarkMode} />
+        <Features isDarkMode={isDarkMode} onGetStarted={onGetStarted} />
         <Pricing isDarkMode={isDarkMode} />
         <Contact isDarkMode={isDarkMode} />
       </main>

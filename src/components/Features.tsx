@@ -1,7 +1,12 @@
 import { BarChart3, Brain, MessageSquare, Target } from 'lucide-react';
 import React from 'react';
 
-const Features: React.FC = () => {
+interface FeaturesProps {
+  isDarkMode: boolean;
+  onGetStarted: () => void;
+}
+
+const Features: React.FC<FeaturesProps> = ({ isDarkMode, onGetStarted }) => {
   const features = [
     {
       icon: Brain,
@@ -76,7 +81,9 @@ const Features: React.FC = () => {
             <p className="text-lg text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
               Join thousands of farmers who have already improved their yields with Soil-Sync's intelligent analysis platform.
             </p>
-            <button className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+            <button
+              onClick={onGetStarted}
+              className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
               Start Your Free Trial
             </button>
           </div>
