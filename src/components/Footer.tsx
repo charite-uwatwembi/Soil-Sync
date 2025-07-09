@@ -1,7 +1,11 @@
 import { Leaf } from 'lucide-react';
 import React from 'react';
 
-const Footer: React.FC = () => {
+interface FooterProps {
+  onPageChange: (page: string) => void;
+}
+
+const Footer: React.FC<FooterProps> = ({ onPageChange }) => {
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -56,7 +60,7 @@ const Footer: React.FC = () => {
             <ul className="space-y-2">
               <li>
                 <button 
-                  onClick={() => scrollToSection('features')}
+                  onClick={() => onPageChange('Features')}
                   className="text-gray-400 hover:text-green-400 transition-colors"
                 >
                   Features
@@ -64,7 +68,7 @@ const Footer: React.FC = () => {
               </li>
               <li>
                 <button 
-                  onClick={() => scrollToSection('pricing')}
+                  onClick={() => onPageChange('Pricing')}
                   className="text-gray-400 hover:text-green-400 transition-colors"
                 >
                   Pricing
@@ -72,7 +76,7 @@ const Footer: React.FC = () => {
               </li>
               <li>
                 <button 
-                  onClick={() => scrollToSection('contact')}
+                  onClick={() => onPageChange('Contact')}
                   className="text-gray-400 hover:text-green-400 transition-colors"
                 >
                   Contact
@@ -94,22 +98,34 @@ const Footer: React.FC = () => {
             <h3 className="text-lg font-semibold mb-4">Legal</h3>
             <ul className="space-y-2">
               <li>
-                <button className="text-gray-400 hover:text-green-400 transition-colors">
+                <button 
+                  onClick={() => onPageChange('Privacy Policy')}
+                  className="text-gray-400 hover:text-green-400 transition-colors"
+                >
                   Privacy Policy
                 </button>
               </li>
               <li>
-                <button className="text-gray-400 hover:text-green-400 transition-colors">
+                <button 
+                  onClick={() => onPageChange('Terms of Service')}
+                  className="text-gray-400 hover:text-green-400 transition-colors"
+                >
                   Terms of Service
                 </button>
               </li>
               <li>
-                <button className="text-gray-400 hover:text-green-400 transition-colors">
+                <button 
+                  onClick={() => onPageChange('Cookie Policy')}
+                  className="text-gray-400 hover:text-green-400 transition-colors"
+                >
                   Cookie Policy
                 </button>
               </li>
               <li>
-                <button className="text-gray-400 hover:text-green-400 transition-colors">
+                <button 
+                  onClick={() => onPageChange('Data Protection')}
+                  className="text-gray-400 hover:text-green-400 transition-colors"
+                >
                   Data Protection
                 </button>
               </li>

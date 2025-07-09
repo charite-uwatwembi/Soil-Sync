@@ -13,9 +13,10 @@ interface LandingPageProps {
   user: any;
   onSignOut: () => void;
   toggleDarkMode: () => void;
+  onPageChange: (page: string) => void;
 }
 
-const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, onGetStarted, isAuthenticated, user, onSignOut, toggleDarkMode }) => {
+const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, onGetStarted, isAuthenticated, user, onSignOut, toggleDarkMode, onPageChange }) => {
   return (
     <div className={`min-h-screen w-full flex flex-col ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'} transition-colors duration-200`}>
       <Header
@@ -34,7 +35,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, onGetStarted, isA
         <Contact isDarkMode={isDarkMode} />
       </main>
 
-      <Footer isDarkMode={isDarkMode} />
+      <Footer isDarkMode={isDarkMode} onPageChange={onPageChange} />
     </div>
   );
 };

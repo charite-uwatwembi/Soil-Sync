@@ -2,7 +2,12 @@ import { useEffect, useState } from 'react';
 import AgriNews from './components/AgriNews';
 import AuthModal from './components/AuthModal';
 import DataTable from './components/DataTable';
+import Footer from './components/Footer';
 import LandingPage from './components/LandingPage';
+import CookiePolicy from './components/Legal/CookiePolicy';
+import DataProtection from './components/Legal/DataProtection';
+import PrivacyPolicy from './components/Legal/PrivacyPolicy';
+import TermsOfService from './components/Legal/TermsOfService';
 import NavigationPages from './components/NavigationPages';
 import RecommendationCard from './components/RecommendationCard';
 import RecommendationChart from './components/RecommendationChart';
@@ -216,17 +221,39 @@ function App() {
 
   return (
     <ThemeProvider>
-      {/* Render LandingPage if not authenticated, else render main app */}
-      {!user ? (
+      {showAuthModal && (
+        <AuthModal
+          isOpen={showAuthModal}
+          onClose={() => setShowAuthModal(false)}
+          mode={authMode}
+          onAuthSuccess={() => {
+            setShowAuthModal(false);
+            loadUserData();
+          }}
+          onModeChange={setAuthMode}
+          isDarkMode={isDarkMode}
+        />
+      )}
+
+      {activePage === 'Privacy Policy' ? (
+        <PrivacyPolicy isDarkMode={isDarkMode} onPageChange={setActivePage} />
+      ) : activePage === 'Terms of Service' ? (
+        <TermsOfService isDarkMode={isDarkMode} onPageChange={setActivePage} />
+      ) : activePage === 'Cookie Policy' ? (
+        <CookiePolicy isDarkMode={isDarkMode} onPageChange={setActivePage} />
+      ) : activePage === 'Data Protection' ? (
+        <DataProtection isDarkMode={isDarkMode} onPageChange={setActivePage} />
+      ) : !user ? (
         <div className={`min-h-screen flex items-center justify-center ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
           <LandingPage
-          isDarkMode={isDarkMode}
+            isDarkMode={isDarkMode}
             onGetStarted={() => openAuthModal('signIn')}
             isAuthenticated={!!user}
             user={user}
             onSignOut={handleSignOut}
             toggleDarkMode={toggleDarkMode}
-        />
+            onPageChange={setActivePage}
+          />
         </div>
       ) : (
         <div className={`flex min-h-screen ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
@@ -239,119 +266,79 @@ function App() {
             onSignOut={handleSignOut}
           />
           <div className={`flex flex-col flex-1 transition-all duration-300 ${isCollapsed ? 'ml-16' : 'ml-64'}`}>
-          <TopBar 
-            isCollapsed={isCollapsed}
-            setIsCollapsed={setIsCollapsed}
-            isDarkMode={isDarkMode}
-            toggleDarkMode={toggleDarkMode}
-            user={user}
+            <TopBar 
+              isCollapsed={isCollapsed}
+              setIsCollapsed={setIsCollapsed}
+              isDarkMode={isDarkMode}
+              toggleDarkMode={toggleDarkMode}
+              user={user}
               onSignIn={() => openAuthModal('signIn')}
-            onSignOut={handleSignOut}
+              onSignOut={handleSignOut}
               toggleSidebar={toggleSidebar}
               isSidebarOpen={isCollapsed}
-          />
+            />
             <main className={`flex-1 transition-all duration-300 p-6 mt-16`}>
-            <div className="max-w-7xl mx-auto">
-              {activePage === 'Dashboard' ? (
-                <div className="space-y-6">
-                  {/* Top Row - Current Recommendation */}
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div className="lg:col-span-2">
-                      <RecommendationCard 
+              <div className="max-w-7xl mx-auto">
+                {activePage === 'Dashboard' ? (
+                  <div className="space-y-6">
+                    {/* Top Row - Current Recommendation */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                      <div className="lg:col-span-2">
+                        <RecommendationCard 
+                          isDarkMode={isDarkMode}
+                          recommendation={currentRecommendation}
+                        />
+                      </div>
+                      <div>
+                        <SoilForm 
+                          isDarkMode={isDarkMode}
+                          onSubmit={handleSoilSubmit}
+                          loading={loading}
+                        />
+                      </div>
+                    </div>
+                    {/* Middle Row - Soil Visualization */}
+                    <div>
+                      <SoilVisualizationChart 
                         isDarkMode={isDarkMode}
+                        soilData={currentSoilData}
                         recommendation={currentRecommendation}
                       />
                     </div>
+                    {/* Third Row - Chart and News */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                      <div className="lg:col-span-2">
+                        <RecommendationChart 
+                          isDarkMode={isDarkMode}
+                          data={chartData}
+                        />
+                      </div>
+                      <div>
+                        <AgriNews isDarkMode={isDarkMode} />
+                      </div>
+                    </div>
+                    {/* Bottom Row - Data Table */}
                     <div>
-                      <SoilForm 
+                      <DataTable 
                         isDarkMode={isDarkMode}
-                        onSubmit={handleSoilSubmit}
-                        loading={loading}
+                        data={historyData}
                       />
                     </div>
                   </div>
-                  {/* Middle Row - Soil Visualization */}
-                  <div>
-                    <SoilVisualizationChart 
-                      isDarkMode={isDarkMode}
-                      soilData={currentSoilData}
-                      recommendation={currentRecommendation}
-                    />
-                  </div>
-                  {/* Third Row - Chart and News */}
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div className="lg:col-span-2">
-                      <RecommendationChart 
-                        isDarkMode={isDarkMode}
-                        data={chartData}
-                      />
-                    </div>
-                    <div>
-                      <AgriNews isDarkMode={isDarkMode} />
-                    </div>
-                  </div>
-                  {/* Bottom Row - Data Table */}
-                  <div>
-                    <DataTable 
-                      isDarkMode={isDarkMode}
-                      data={historyData}
-                    />
-                  </div>
-                </div>
-              ) : (
-                <NavigationPages 
-                  isDarkMode={isDarkMode} 
-                  activePage={activePage}
-                  onSensorData={handleSensorData}
-                  historyData={historyData}
-                />
-              )}
-            </div>
-          </main>
-          {/* Footer */}
-            <footer className={`flex-shrink-0 transition-all duration-300 ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border-t mt-auto`}>
-            <div className="max-w-7xl mx-auto px-6 py-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-6">
-                  <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                    © 2024 SoilSync. Powered by AI for Smart Agriculture.
-                  </p>
-                </div>
-                <div className="flex items-center space-x-4">
-                  <button className={`text-sm hover:text-green-600 transition-colors ${
-                    isDarkMode ? 'text-gray-400' : 'text-gray-600'
-                  }`}>
-                    Privacy Policy
-                  </button>
-                  <button className={`text-sm hover:text-green-600 transition-colors ${
-                    isDarkMode ? 'text-gray-400' : 'text-gray-600'
-                  }`}>
-                    Terms of Service
-                  </button>
-                  <button className={`text-sm hover:text-green-600 transition-colors ${
-                    isDarkMode ? 'text-gray-400' : 'text-gray-600'
-                  }`}>
-                    Support
-                  </button>
-                </div>
+                ) : (
+                  <NavigationPages 
+                    isDarkMode={isDarkMode} 
+                    activePage={activePage}
+                    onSensorData={handleSensorData}
+                    historyData={historyData}
+                  />
+                )}
               </div>
-            </div>
-          </footer>
+            </main>
+            <Footer onPageChange={setActivePage} />
           </div>
         </div>
       )}
-
-      <AuthModal
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-        mode={authMode}
-        onAuthSuccess={() => {
-          setShowAuthModal(false);
-          loadUserData();
-        }}
-        onModeChange={setAuthMode}
-        isDarkMode={isDarkMode}
-      />
     </ThemeProvider>
   );
 }
