@@ -1,5 +1,5 @@
+import { ArrowLeft, Eye, EyeOff, Lock, Mail } from 'lucide-react';
 import React, { useState } from 'react';
-import { Mail, Lock, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 
 interface AuthProps {
   onSignIn: (email: string, password: string) => void;

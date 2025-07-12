@@ -134,6 +134,8 @@ def health_check():
 
 @app.route('/predict', methods=['POST'])
 def predict():
+    if not request.is_json:
+        return jsonify({'error': 'Request must be JSON'}), 400
     try:
         input_data = request.get_json()
         if not input_data:
@@ -146,7 +148,7 @@ def predict():
         return jsonify(prediction)
     except Exception as e:
         logger.error(f"Prediction endpoint error: {str(e)}")
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': str(e)}), 400
 
 @app.route("/sms", methods=["POST"])
 def sms_reply():
@@ -198,9 +200,10 @@ def sms_reply():
                 data[field] = float(data[field])
 
         # Check for missing fields
-        missing = [col for col in MODEL_COLUMNS if col not in data]
-        if missing:
-            resp.message(f"Missing fields: {', '.join(missing)}. Please send all required data.")
+        missing_fields = [col for col in MODEL_COLUMNS if col not in data]
+        if missing_fields:
+            resp.message("Invalid SMS format. Please send all required data in the correct format.")
+            return str(resp)
         else:
             # Predict
             result = model_server.predict(data)

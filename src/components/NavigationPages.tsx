@@ -1,13 +1,13 @@
 import {
-  BarChart3,
-  Bell,
-  ChevronDown,
-  Database,
-  FileText,
-  HelpCircle,
-  Sprout,
-  TrendingUp,
-  User
+    BarChart3,
+    Bell,
+    ChevronDown,
+    Database,
+    FileText,
+    HelpCircle,
+    Sprout,
+    TrendingUp,
+    User
 } from 'lucide-react';
 import React, { useState } from 'react';
 import type { AuthUser } from '../services/authService';
