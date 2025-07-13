@@ -278,6 +278,21 @@ function AppContent() {
           <DataProtection isDarkMode={isDarkMode} onPageChange={setActivePage} />
           <Footer onPageChange={setActivePage} />
         </>
+      ) : activePage === 'Help' || activePage === 'Documentation' || activePage === 'API Reference' ? (
+        <>
+          <div className={`min-h-screen ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+              <NavigationPages 
+                isDarkMode={isDarkMode} 
+                activePage={activePage}
+                onSensorData={handleSensorData}
+                historyData={historyData}
+                user={user}
+              />
+            </div>
+          </div>
+          <Footer onPageChange={setActivePage} />
+        </>
       ) : !user ? (
         <>
           <div className={`min-h-screen flex items-center justify-center ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>

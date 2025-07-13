@@ -9,9 +9,19 @@ const TermsOfService: React.FC<LegalPageProps> = ({ isDarkMode, onPageChange }) 
   return (
     <div className={`py-16 px-4 sm:px-6 lg:px-8 ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'} transition-colors duration-200`}>
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-4xl font-bold mb-8 text-center bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
-          Terms of Service
-        </h1>
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-4xl font-bold text-center bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
+            Terms of Service
+          </h1>
+          <button
+            onClick={() => onPageChange('Dashboard')}
+            className={`px-4 py-2 rounded-lg transition-colors ${
+              isDarkMode ? 'bg-gray-700 hover:bg-gray-600 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+            }`}
+          >
+            ← Back to Home
+          </button>
+        </div>
 
         <section className="mb-10">
           <h2 className="text-2xl font-semibold mb-4">Using Soil-Sync</h2>
@@ -96,12 +106,7 @@ const TermsOfService: React.FC<LegalPageProps> = ({ isDarkMode, onPageChange }) 
           <p className="mb-4">By continuing to use Soil-Sync, you confirm that you understand and agree to these Terms of Service. Happy soil analyzing!</p>
         </section>
         <div className="text-center mt-10">
-          <button 
-            onClick={() => onPageChange('LandingPage')}
-            className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200"
-          >
-            Back to Landing Page
-          </button>
+        
         </div>
       </div>
     </div>

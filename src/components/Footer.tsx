@@ -61,22 +61,22 @@ const Footer: React.FC<FooterProps> = ({ onPageChange }) => {
             <h4 className="font-semibold text-white mb-3 text-sm">{t('footer.legal')}</h4>
             <ul className="space-y-2">
               <li>
-                <button onClick={() => onPageChange('privacy')} className="text-gray-400 hover:text-green-400 transition-colors text-sm">
+                <button onClick={() => onPageChange('Privacy Policy')} className="text-gray-400 hover:text-green-400 transition-colors text-sm">
                   {t('footer.privacyPolicy')}
                 </button>
               </li>
               <li>
-                <button onClick={() => onPageChange('terms')} className="text-gray-400 hover:text-green-400 transition-colors text-sm">
+                <button onClick={() => onPageChange('Terms of Service')} className="text-gray-400 hover:text-green-400 transition-colors text-sm">
                   {t('footer.termsOfService')}
                 </button>
               </li>
               <li>
-                <button onClick={() => onPageChange('cookies')} className="text-gray-400 hover:text-green-400 transition-colors text-sm">
+                <button onClick={() => onPageChange('Cookie Policy')} className="text-gray-400 hover:text-green-400 transition-colors text-sm">
                   {t('footer.cookiePolicy')}
                 </button>
               </li>
               <li>
-                <button onClick={() => onPageChange('data-protection')} className="text-gray-400 hover:text-green-400 transition-colors text-sm">
+                <button onClick={() => onPageChange('Data Protection')} className="text-gray-400 hover:text-green-400 transition-colors text-sm">
                   {t('footer.dataProtection')}
                 </button>
               </li>
@@ -115,17 +115,17 @@ const Footer: React.FC<FooterProps> = ({ onPageChange }) => {
             <h4 className="font-semibold text-white mb-3 text-sm">{t('footer.support')}</h4>
             <ul className="space-y-2">
               <li>
-                <button onClick={() => onPageChange('help')} className="text-gray-400 hover:text-green-400 transition-colors text-sm">
+                <button onClick={() => onPageChange('Help')} className="text-gray-400 hover:text-green-400 transition-colors text-sm">
                   {t('footer.helpCenter')}
                 </button>
               </li>
               <li>
-                <button className="text-gray-400 hover:text-green-400 transition-colors text-sm">
+                <button onClick={() => onPageChange('Documentation')} className="text-gray-400 hover:text-green-400 transition-colors text-sm">
                   {t('footer.documentation')}
                 </button>
               </li>
               <li>
-                <button className="text-gray-400 hover:text-green-400 transition-colors text-sm">
+                <button onClick={() => onPageChange('API Reference')} className="text-gray-400 hover:text-green-400 transition-colors text-sm">
                   {t('footer.apiReference')}
                 </button>
               </li>

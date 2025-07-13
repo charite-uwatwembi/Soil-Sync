@@ -9,9 +9,19 @@ const CookiePolicy: React.FC<LegalPageProps> = ({ isDarkMode, onPageChange }) =>
   return (
     <div className={`py-16 px-4 sm:px-6 lg:px-8 ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'} transition-colors duration-200`}>
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-4xl font-bold mb-8 text-center bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
-          Cookie Policy
-        </h1>
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-4xl font-bold text-center bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
+            Cookie Policy
+          </h1>
+          <button
+            onClick={() => onPageChange('Dashboard')}
+            className={`px-4 py-2 rounded-lg transition-colors ${
+              isDarkMode ? 'bg-gray-700 hover:bg-gray-600 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+            }`}
+          >
+            ← Back to Home
+          </button>
+        </div>
 
         <section className="mb-10">
           <p className="mb-4">This Cookie Policy explains how Soil-Sync uses “cookies” and similar technologies to recognize you when you visit our website. We want to make these details as simple and transparent as possible. By using our site, you agree to the use of cookies and local storage as described here. However, you have choices to control or disable them, which we’ll also explain below.</p>
@@ -73,12 +83,7 @@ const CookiePolicy: React.FC<LegalPageProps> = ({ isDarkMode, onPageChange }) =>
           <p className="mb-4">By continuing to use Soil-Sync, you consent to our use of cookies and local storage as described here (unless you have disabled them via your browser or declined via our prompts). We appreciate your understanding, and we hope the cookies make your experience smoother! If you have any questions about our use of cookies, feel free to reach out.</p>
         </section>
         <div className="text-center mt-10">
-          <button 
-            onClick={() => onPageChange('LandingPage')}
-            className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200"
-          >
-            Back to Landing Page
-          </button>
+          
         </div>
       </div>
     </div>

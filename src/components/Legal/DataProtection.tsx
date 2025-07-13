@@ -9,9 +9,19 @@ const DataProtection: React.FC<LegalPageProps> = ({ isDarkMode, onPageChange }) 
   return (
     <div className={`py-16 px-4 sm:px-6 lg:px-8 ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-white text-gray-900'} transition-colors duration-200`}>
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-4xl font-bold mb-8 text-center bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
-          Data Protection
-        </h1>
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-4xl font-bold text-center bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
+            Data Protection
+          </h1>
+          <button
+            onClick={() => onPageChange('Dashboard')}
+            className={`px-4 py-2 rounded-lg transition-colors ${
+              isDarkMode ? 'bg-gray-700 hover:bg-gray-600 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+            }`}
+          >
+            ← Back to Home
+          </button>
+        </div>
 
         <section className="mb-10">
           <p className="mb-4">At Soil-Sync, we are committed to protecting your data and respecting your privacy rights. This Data Protection section outlines our principles and practices regarding how we safeguard your personal information, comply with data protection laws, and ensure you remain in control of your data. Think of it as a summary of our commitment to data privacy and security, in line with regulations like the GDPR and others worldwide.</p>
@@ -96,12 +106,7 @@ const DataProtection: React.FC<LegalPageProps> = ({ isDarkMode, onPageChange }) 
           <p className="mb-4"><strong>In summary,</strong> this Data Protection section underscores that we take your privacy seriously. We use robust security practices to guard your data, adhere to privacy laws, and give you control over what happens with your information. Soil-Sync’s mission is to help you with soil insights, and we are committed to doing that in a way that respects and protects your personal data at every step. Thank you for trusting Soil-Sync, and rest assured that your data protection is in good hands with us.</p>
         </section>
         <div className="text-center mt-10">
-          <button 
-            onClick={() => onPageChange('LandingPage')}
-            className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200"
-          >
-            Back to Landing Page
-          </button>
+        
         </div>
       </div>
     </div>

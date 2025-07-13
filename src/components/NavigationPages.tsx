@@ -47,6 +47,10 @@ const NavigationPages: React.FC<NavigationPagesProps> = ({ isDarkMode, activePag
         return <ProfilePage isDarkMode={isDarkMode} user={user} />;
       case 'Help':
         return <HelpPage isDarkMode={isDarkMode} />;
+      case 'Documentation':
+        return <DocumentationPage isDarkMode={isDarkMode} />;
+      case 'API Reference':
+        return <APIReferencePage isDarkMode={isDarkMode} />;
       default:
         return null;
     }
@@ -427,9 +431,19 @@ const HelpPage: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }) => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center space-x-3 mb-6">
-        <HelpCircle className="h-6 w-6 text-blue-600" />
-        <h2 className="text-2xl font-bold">{t('help.title')}</h2>
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center space-x-3">
+          <HelpCircle className="h-6 w-6 text-blue-600" />
+          <h2 className="text-2xl font-bold">{t('help.title')}</h2>
+        </div>
+        <button
+          onClick={() => window.location.href = '/'}
+          className={`px-4 py-2 rounded-lg transition-colors ${
+            isDarkMode ? 'bg-gray-700 hover:bg-gray-600 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+          }`}
+        >
+          ← Back to Home
+        </button>
       </div>
     
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -463,6 +477,366 @@ const HelpPage: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }) => {
             )}
           </div>
         ))}
+      </div>
+    </div>
+  );
+};
+
+// Documentation Page
+const DocumentationPage: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }) => {
+  const [activeSection, setActiveSection] = useState('getting-started');
+  
+  const sections = [
+    {
+      id: 'getting-started',
+      title: 'Getting Started',
+      content: (
+        <div className="space-y-6">
+          <h3 className="text-xl font-semibold mb-4">Welcome to Soil-Sync</h3>
+          <div className="space-y-4">
+            <div className={`p-4 rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-blue-50'}`}>
+              <h4 className="font-semibold mb-2">Quick Start Guide</h4>
+              <ol className="list-decimal ml-4 space-y-2">
+                <li>Create your account and sign in</li>
+                <li>Navigate to the Soil Data page</li>
+                <li>Input your soil parameters or connect IoT sensors</li>
+                <li>Get personalized fertilizer recommendations</li>
+                <li>Monitor your crop performance through Analytics</li>
+              </ol>
+            </div>
+            <div className={`p-4 rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-green-50'}`}>
+              <h4 className="font-semibold mb-2">System Requirements</h4>
+              <ul className="list-disc ml-4 space-y-1">
+                <li>Modern web browser (Chrome, Firefox, Safari, Edge)</li>
+                <li>Internet connection for real-time data</li>
+                <li>Mobile device for SMS notifications (optional)</li>
+                <li>IoT sensors for automated data collection (optional)</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      )
+    },
+    {
+      id: 'soil-analysis',
+      title: 'Soil Analysis',
+      content: (
+        <div className="space-y-6">
+          <h3 className="text-xl font-semibold mb-4">Understanding Soil Parameters</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className={`p-4 rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-yellow-50'}`}>
+              <h4 className="font-semibold mb-2">Primary Nutrients</h4>
+              <ul className="space-y-2">
+                <li><strong>Nitrogen (N):</strong> Essential for leaf growth (0.1-0.6%)</li>
+                <li><strong>Phosphorus (P):</strong> Supports root development (5-45 ppm)</li>
+                <li><strong>Potassium (K):</strong> Enhances disease resistance (50-250 ppm)</li>
+              </ul>
+            </div>
+            <div className={`p-4 rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-purple-50'}`}>
+              <h4 className="font-semibold mb-2">Environmental Factors</h4>
+              <ul className="space-y-2">
+                <li><strong>Temperature:</strong> Affects plant metabolism (18-33°C)</li>
+                <li><strong>Humidity:</strong> Influences disease risk (40-80%)</li>
+                <li><strong>Moisture:</strong> Critical for nutrient uptake (20-70%)</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      )
+    },
+    {
+      id: 'features',
+      title: 'Features Guide',
+      content: (
+        <div className="space-y-6">
+          <h3 className="text-xl font-semibold mb-4">Platform Features</h3>
+          <div className="space-y-4">
+            <div className={`p-4 rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-indigo-50'}`}>
+              <h4 className="font-semibold mb-2">🔬 AI-Powered Analysis</h4>
+              <p>Get intelligent fertilizer recommendations based on advanced machine learning algorithms trained on agricultural data.</p>
+            </div>
+            <div className={`p-4 rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-green-50'}`}>
+              <h4 className="font-semibold mb-2">📊 Real-time Monitoring</h4>
+              <p>Track soil conditions, crop performance, and environmental factors through interactive dashboards.</p>
+            </div>
+            <div className={`p-4 rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-orange-50'}`}>
+              <h4 className="font-semibold mb-2">🌐 IoT Integration</h4>
+              <p>Connect your sensors for automated data collection and continuous monitoring.</p>
+            </div>
+            <div className={`p-4 rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-pink-50'}`}>
+              <h4 className="font-semibold mb-2">📱 SMS Notifications</h4>
+              <p>Receive alerts and recommendations directly on your mobile device via SMS and USSD.</p>
+            </div>
+          </div>
+        </div>
+      )
+    },
+    {
+      id: 'troubleshooting',
+      title: 'Troubleshooting',
+      content: (
+        <div className="space-y-6">
+          <h3 className="text-xl font-semibold mb-4">Common Issues & Solutions</h3>
+          <div className="space-y-4">
+            <div className={`p-4 rounded-lg border-l-4 border-red-500 ${isDarkMode ? 'bg-red-900/20' : 'bg-red-50'}`}>
+              <h4 className="font-semibold mb-2">Sensor Data Not Updating</h4>
+              <ul className="list-disc ml-4 space-y-1">
+                <li>Check sensor battery levels</li>
+                <li>Verify network connectivity</li>
+                <li>Ensure proper sensor calibration</li>
+                <li>Contact support if issue persists</li>
+              </ul>
+            </div>
+            <div className={`p-4 rounded-lg border-l-4 border-yellow-500 ${isDarkMode ? 'bg-yellow-900/20' : 'bg-yellow-50'}`}>
+              <h4 className="font-semibold mb-2">Login Issues</h4>
+              <ul className="list-disc ml-4 space-y-1">
+                <li>Verify email and password</li>
+                <li>Try password reset</li>
+                <li>Clear browser cache</li>
+                <li>Check internet connection</li>
+              </ul>
+            </div>
+            <div className={`p-4 rounded-lg border-l-4 border-blue-500 ${isDarkMode ? 'bg-blue-900/20' : 'bg-blue-50'}`}>
+              <h4 className="font-semibold mb-2">SMS Not Received</h4>
+              <ul className="list-disc ml-4 space-y-1">
+                <li>Check phone number format</li>
+                <li>Verify network coverage</li>
+                <li>Ensure SMS balance</li>
+                <li>Try alternative formats</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      )
+    }
+  ];
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center space-x-3">
+          <FileText className="h-6 w-6 text-blue-600" />
+          <h2 className="text-2xl font-bold">Documentation</h2>
+        </div>
+        <button
+          onClick={() => window.location.href = '/'}
+          className={`px-4 py-2 rounded-lg transition-colors ${
+            isDarkMode ? 'bg-gray-700 hover:bg-gray-600 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+          }`}
+        >
+          ← Back to Home
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Navigation */}
+        <div className="lg:col-span-1">
+          <div className={`p-4 rounded-xl border ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
+            <h3 className="font-semibold mb-4">Contents</h3>
+            <nav className="space-y-2">
+              {sections.map((section) => (
+                <button
+                  key={section.id}
+                  onClick={() => setActiveSection(section.id)}
+                  className={`w-full text-left p-2 rounded-lg transition-colors ${
+                    activeSection === section.id
+                      ? 'bg-blue-500 text-white'
+                      : isDarkMode
+                      ? 'text-gray-300 hover:bg-gray-700'
+                      : 'text-gray-600 hover:bg-gray-100'
+                  }`}
+                >
+                  {section.title}
+                </button>
+              ))}
+            </nav>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="lg:col-span-3">
+          <div className={`p-6 rounded-xl border ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
+            {sections.find(s => s.id === activeSection)?.content}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// API Reference Page
+const APIReferencePage: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }) => {
+  const [activeEndpoint, setActiveEndpoint] = useState('soil-analysis');
+  
+  const endpoints = [
+    {
+      id: 'soil-analysis',
+      title: 'Soil Analysis',
+      method: 'POST',
+      path: '/api/soil-analysis',
+      description: 'Get fertilizer recommendations based on soil parameters',
+      request: {
+        nitrogen: 0.25,
+        phosphorus: 15,
+        potassium: 120,
+        temperature: 25,
+        humidity: 65,
+        moisture: 45,
+        soil_type: 'Loamy',
+        crop_type: 'Maize'
+      },
+      response: {
+        fertilizer: 'NPK 10-26-26',
+        rate: 150,
+        confidence: 94.2,
+        recommendations: [
+          'Apply fertilizer during early morning',
+          'Ensure adequate soil moisture',
+          'Monitor for pest activity'
+        ]
+      }
+    },
+    {
+      id: 'sms-webhook',
+      title: 'SMS Webhook',
+      method: 'POST',
+      path: '/api/sms-webhook',
+      description: 'Process SMS commands for soil analysis',
+      request: {
+        phone: '+250788123456',
+        message: 'SOIL 15 120 0.25 MAIZE'
+      },
+      response: {
+        status: 'success',
+        message: 'Analysis complete. Recommended: NPK 10-26-26 at 150 kg/ha (94% confidence)'
+      }
+    },
+    {
+      id: 'iot-data',
+      title: 'IoT Data',
+      method: 'POST',
+      path: '/api/iot-webhook',
+      description: 'Receive data from IoT sensors',
+      request: {
+        sensor_id: 'SOIL_001',
+        timestamp: '2025-01-02T10:00:00Z',
+        nitrogen: 0.23,
+        phosphorus: 18,
+        potassium: 135,
+        temperature: 24.5,
+        humidity: 68,
+        soilMoisture: 42
+      },
+      response: {
+        status: 'received',
+        processed: true,
+        analysis_id: 'ANAL_123456'
+      }
+    }
+  ];
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center space-x-3">
+          <Database className="h-6 w-6 text-purple-600" />
+          <h2 className="text-2xl font-bold">API Reference</h2>
+        </div>
+        <button
+          onClick={() => window.location.href = '/'}
+          className={`px-4 py-2 rounded-lg transition-colors ${
+            isDarkMode ? 'bg-gray-700 hover:bg-gray-600 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+          }`}
+        >
+          ← Back to Home
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Navigation */}
+        <div className="lg:col-span-1">
+          <div className={`p-4 rounded-xl border ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
+            <h3 className="font-semibold mb-4">Endpoints</h3>
+            <nav className="space-y-2">
+              {endpoints.map((endpoint) => (
+                <button
+                  key={endpoint.id}
+                  onClick={() => setActiveEndpoint(endpoint.id)}
+                  className={`w-full text-left p-2 rounded-lg transition-colors ${
+                    activeEndpoint === endpoint.id
+                      ? 'bg-purple-500 text-white'
+                      : isDarkMode
+                      ? 'text-gray-300 hover:bg-gray-700'
+                      : 'text-gray-600 hover:bg-gray-100'
+                  }`}
+                >
+                  <div className="flex items-center space-x-2">
+                    <span className={`text-xs px-2 py-1 rounded ${
+                      endpoint.method === 'POST' ? 'bg-green-500 text-white' : 'bg-blue-500 text-white'
+                    }`}>
+                      {endpoint.method}
+                    </span>
+                    <span className="text-sm">{endpoint.title}</span>
+                  </div>
+                </button>
+              ))}
+            </nav>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="lg:col-span-3">
+          {endpoints.filter(e => e.id === activeEndpoint).map((endpoint) => (
+            <div key={endpoint.id} className="space-y-6">
+              <div className={`p-6 rounded-xl border ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
+                <div className="flex items-center space-x-3 mb-4">
+                  <span className={`px-3 py-1 rounded text-sm font-medium ${
+                    endpoint.method === 'POST' ? 'bg-green-500 text-white' : 'bg-blue-500 text-white'
+                  }`}>
+                    {endpoint.method}
+                  </span>
+                  <code className="text-lg font-mono">{endpoint.path}</code>
+                </div>
+                <p className={`mb-6 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                  {endpoint.description}
+                </p>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Request */}
+                  <div>
+                    <h4 className="font-semibold mb-3">Request</h4>
+                    <div className={`p-4 rounded-lg ${isDarkMode ? 'bg-gray-900' : 'bg-gray-100'}`}>
+                      <pre className="text-sm overflow-x-auto">
+                        <code>{JSON.stringify(endpoint.request, null, 2)}</code>
+                      </pre>
+                    </div>
+                  </div>
+
+                  {/* Response */}
+                  <div>
+                    <h4 className="font-semibold mb-3">Response</h4>
+                    <div className={`p-4 rounded-lg ${isDarkMode ? 'bg-gray-900' : 'bg-gray-100'}`}>
+                      <pre className="text-sm overflow-x-auto">
+                        <code>{JSON.stringify(endpoint.response, null, 2)}</code>
+                      </pre>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Authentication Note */}
+              <div className={`p-4 rounded-lg border-l-4 border-yellow-500 ${isDarkMode ? 'bg-yellow-900/20' : 'bg-yellow-50'}`}>
+                <h4 className="font-semibold mb-2">Authentication</h4>
+                <p className="text-sm">
+                  All API endpoints require authentication. Include your API key in the request headers:
+                </p>
+                <code className="block mt-2 p-2 bg-gray-200 dark:bg-gray-700 rounded text-sm">
+                  Authorization: Bearer YOUR_API_KEY
+                </code>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
