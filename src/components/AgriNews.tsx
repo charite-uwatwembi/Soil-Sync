@@ -1,4 +1,4 @@
-import { Calendar, ExternalLink, Filter, RefreshCw, Search, User } from 'lucide-react';
+import { Calendar, Filter, RefreshCw, Search, User } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { newsService, type NewsArticle } from '../services/newsService';
 
@@ -75,16 +75,10 @@ const AgriNews: React.FC<AgriNewsProps> = ({ isDarkMode }) => {
   });
 
   return (
-    <div className={`p-6 rounded-xl border transition-all duration-200 hover:shadow-lg ${
+    <div className={`p-6 rounded-xl border transition-all duration-200 ${
       isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
     }`}>
       <div className="flex items-center justify-between mb-6">
-        <div>
-          <h3 className="text-lg font-semibold">Agricultural News</h3>
-          <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-            Latest insights from Rwanda and beyond
-          </p>
-        </div>
         <div className="flex items-center space-x-2">
           <button 
             onClick={handleRefresh}
@@ -95,10 +89,9 @@ const AgriNews: React.FC<AgriNewsProps> = ({ isDarkMode }) => {
           >
             <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
           </button>
-          <button className="text-green-600 hover:text-green-700 font-medium text-sm flex items-center space-x-1">
-            <span>View All</span>
-            <ExternalLink className="h-4 w-4" />
-          </button>
+          <span className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+            {articles.length} articles found
+          </span>
         </div>
       </div>
 
@@ -151,7 +144,7 @@ const AgriNews: React.FC<AgriNewsProps> = ({ isDarkMode }) => {
       </div>
 
       {/* News Articles */}
-      <div className="space-y-4 max-h-96 overflow-y-auto">
+      <div className="space-y-4 max-h-[600px] overflow-y-auto">
         {loading ? (
           <div className="space-y-4">
             {[1, 2, 3].map(i => (

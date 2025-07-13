@@ -130,6 +130,61 @@ class AuthService {
     }
   }
 
+  // Delete user account
+  async deleteAccount() {
+    console.log('Auth Service: Attempting to delete account...');
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      throw new Error('No authenticated user');
+    }
+
+    try {
+      // First, delete user data from related tables
+      const { error: profileError } = await supabase
+        .from('users')
+        .delete()
+        .eq('id', user.id);
+
+      if (profileError) {
+        console.error('Auth Service: Error deleting user profile:', profileError);
+      }
+
+      // Delete user's soil analyses
+      const { error: analysesError } = await supabase
+        .from('soil_analyses')
+        .delete()
+        .eq('user_id', user.id);
+
+      if (analysesError) {
+        console.error('Auth Service: Error deleting user analyses:', analysesError);
+      }
+
+      // Delete user's ML predictions
+      const { error: predictionsError } = await supabase
+        .from('ml_predictions')
+        .delete()
+        .eq('user_id', user.id);
+
+      if (predictionsError) {
+        console.error('Auth Service: Error deleting user predictions:', predictionsError);
+      }
+
+      // Finally, delete the auth user
+      const { error: deleteError } = await supabase.auth.admin.deleteUser(user.id);
+
+      if (deleteError) {
+        console.error('Auth Service: Error deleting auth user:', deleteError);
+        throw deleteError;
+      }
+
+      console.log('Auth Service: Account deleted successfully');
+    } catch (error) {
+      console.error('Auth Service: Account deletion failed:', error);
+      throw error;
+    }
+  }
+
   // Listen to auth state changes
   onAuthStateChange(callback: (user: AuthUser | null) => void) {
     console.log('Auth Service: Initializing listener for auth state changes');

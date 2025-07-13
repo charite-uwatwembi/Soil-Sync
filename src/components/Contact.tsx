@@ -1,7 +1,9 @@
 import { Mail, MapPin, Phone, Send } from 'lucide-react';
 import React, { useState } from 'react';
+import { useLanguage } from '../contexts/LanguageContext';
 
 const Contact: React.FC = () => {
+  const { t } = useLanguage();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -12,7 +14,7 @@ const Contact: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Simulate form submission
-    alert('Thank you for your message! We\'ll get back to you soon.');
+    alert(t('contact.thankYou'));
     setFormData({ name: '', email: '', subject: '', message: '' });
   };
 
@@ -29,13 +31,13 @@ const Contact: React.FC = () => {
         {/* Section Header */}
         <div className="text-center mb-16">
           <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            Get in{' '}
+            {t('contact.title')}{' '}
             <span className="bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
-              Touch
+              {t('contact.titleHighlight')}
             </span>
           </h2>
           <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-            Have questions about Soil-Sync? We're here to help you optimize your farming operations.
+            {t('contact.subtitle')}
           </p>
         </div>
 
@@ -44,7 +46,7 @@ const Contact: React.FC = () => {
           <div className="space-y-8">
             <div>
               <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
-                Contact Information
+                {t('contact.contactInformation')}
               </h3>
               <div className="space-y-6">
                 <div className="flex items-start space-x-4">
@@ -52,7 +54,7 @@ const Contact: React.FC = () => {
                     <Mail className="h-6 w-6 text-green-600 dark:text-green-400" />
                   </div>
                   <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-white">Email</h4>
+                    <h4 className="font-semibold text-gray-900 dark:text-white">{t('contact.email')}</h4>
                     <p className="text-gray-600 dark:text-gray-300">support@soil-sync.com</p>
                   </div>
                 </div>
@@ -62,7 +64,7 @@ const Contact: React.FC = () => {
                     <Phone className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                   </div>
                   <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-white">Phone</h4>
+                    <h4 className="font-semibold text-gray-900 dark:text-white">{t('contact.phone')}</h4>
                     <p className="text-gray-600 dark:text-gray-300">+250 789 951 0 64</p>
                   </div>
                 </div>
@@ -72,7 +74,7 @@ const Contact: React.FC = () => {
                     <MapPin className="h-6 w-6 text-purple-600 dark:text-purple-400" />
                   </div>
                   <div>
-                    <h4 className="font-semibold text-gray-900 dark:text-white">Address</h4>
+                    <h4 className="font-semibold text-gray-900 dark:text-white">{t('contact.address')}</h4>
                     <p className="text-gray-600 dark:text-gray-300">
                       Kigali, Rwanda<br />
                     </p>
@@ -83,19 +85,19 @@ const Contact: React.FC = () => {
 
             {/* Support Hours */}
             <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-gray-800 dark:to-gray-700 rounded-xl p-6">
-              <h4 className="font-semibold text-gray-900 dark:text-white mb-4">Support Hours</h4>
+              <h4 className="font-semibold text-gray-900 dark:text-white mb-4">{t('contact.supportHours')}</h4>
               <div className="space-y-2 text-gray-600 dark:text-gray-300">
                 <div className="flex justify-between">
-                  <span>Monday - Friday</span>
+                  <span>{t('contact.mondayFriday')}</span>
                   <span>8:00 AM - 6:00 PM PST</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Saturday</span>
+                  <span>{t('contact.saturday')}</span>
                   <span>9:00 AM - 4:00 PM PST</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Sunday</span>
-                  <span>Closed</span>
+                  <span>{t('contact.sunday')}</span>
+                  <span>{t('contact.closed')}</span>
                 </div>
               </div>
             </div>
@@ -104,14 +106,14 @@ const Contact: React.FC = () => {
           {/* Contact Form */}
           <div className="bg-gray-50 dark:bg-gray-800 rounded-2xl p-8">
             <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
-              Send us a Message
+              {t('contact.sendMessage')}
             </h3>
             
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Name
+                    {t('contact.name')}
                   </label>
                   <input
                     type="text"
@@ -120,14 +122,14 @@ const Contact: React.FC = () => {
                     value={formData.name}
                     onChange={handleChange}
                     className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
-                    placeholder="Your name"
+                    placeholder={t('contact.yourName')}
                     required
                   />
                 </div>
                 
                 <div>
                   <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Email
+                    {t('contact.email')}
                   </label>
                   <input
                     type="email"
@@ -136,7 +138,7 @@ const Contact: React.FC = () => {
                     value={formData.email}
                     onChange={handleChange}
                     className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
-                    placeholder="your@email.com"
+                    placeholder={t('contact.yourEmail')}
                     required
                   />
                 </div>
@@ -144,7 +146,7 @@ const Contact: React.FC = () => {
 
               <div>
                 <label htmlFor="subject" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Subject
+                  {t('contact.subject')}
                 </label>
                 <select
                   id="subject"
@@ -154,18 +156,18 @@ const Contact: React.FC = () => {
                   className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors"
                   required
                 >
-                  <option value="">Select a subject</option>
-                  <option value="general">General Inquiry</option>
-                  <option value="support">Technical Support</option>
-                  <option value="sales">Sales Question</option>
-                  <option value="partnership">Partnership</option>
-                  <option value="feedback">Feedback</option>
+                  <option value="">{t('contact.selectSubject')}</option>
+                  <option value="general">{t('contact.generalInquiry')}</option>
+                  <option value="support">{t('contact.technicalSupport')}</option>
+                  <option value="sales">{t('contact.salesQuestion')}</option>
+                  <option value="partnership">{t('contact.partnership')}</option>
+                  <option value="feedback">{t('contact.feedback')}</option>
                 </select>
               </div>
 
               <div>
                 <label htmlFor="message" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Message
+                  {t('contact.message')}
                 </label>
                 <textarea
                   id="message"
@@ -174,7 +176,7 @@ const Contact: React.FC = () => {
                   onChange={handleChange}
                   rows={5}
                   className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors resize-none"
-                  placeholder="Tell us how we can help you..."
+                  placeholder={t('contact.messagePlaceholder')}
                   required
                 ></textarea>
               </div>
@@ -184,7 +186,7 @@ const Contact: React.FC = () => {
                 className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white py-3 rounded-lg font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center justify-center space-x-2"
               >
                 <Send className="h-5 w-5" />
-                <span>Send Message</span>
+                <span>{t('contact.sendButton')}</span>
               </button>
             </form>
           </div>

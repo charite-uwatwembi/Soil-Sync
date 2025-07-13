@@ -1,5 +1,6 @@
 import { BarChart3, Brain, MessageSquare, Target } from 'lucide-react';
 import React from 'react';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface FeaturesProps {
   isDarkMode: boolean;
@@ -7,29 +8,31 @@ interface FeaturesProps {
 }
 
 const Features: React.FC<FeaturesProps> = ({ isDarkMode, onGetStarted }) => {
+  const { t } = useLanguage();
+
   const features = [
     {
       icon: Brain,
-      title: "AI-Powered Analysis",
-      description: "Advanced machine learning algorithms analyze your soil composition and provide actionable insights for optimal crop growth.",
+      title: t('features.aiAnalysis.title'),
+      description: t('features.aiAnalysis.description'),
       color: "from-green-500 to-green-600"
     },
     {
       icon: MessageSquare,
-      title: "SMS Alerts",
-      description: "Receive timely alerts and recommendations directly to your phone, ensuring you never miss critical farming moments.",
+      title: t('features.smsAlerts.title'),
+      description: t('features.smsAlerts.description'),
       color: "from-blue-500 to-blue-600"
     },
     {
       icon: BarChart3,
-      title: "Dashboard",
-      description: "Comprehensive dashboard with real-time monitoring, historical data, and detailed analytics for informed decision-making.",
+      title: t('features.dashboard.title'),
+      description: t('features.dashboard.description'),
       color: "from-purple-500 to-purple-600"
     },
     {
       icon: Target,
-      title: "Personalized Recommendations",
-      description: "Tailored fertilizer and treatment plans based on your specific soil type, crop requirements, and local conditions.",
+      title: t('features.recommendations.title'),
+      description: t('features.recommendations.description'),
       color: "from-orange-500 to-orange-600"
     }
   ];
@@ -40,13 +43,13 @@ const Features: React.FC<FeaturesProps> = ({ isDarkMode, onGetStarted }) => {
         {/* Section Header */}
         <div className="text-center mb-16">
           <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            Powerful Features for{' '}
+            {t('features.title')}{' '}
             <span className="bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
-              Modern Farming
+              {t('features.titleHighlight')}
             </span>
           </h2>
           <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-            Everything you need to optimize your agricultural operations and maximize your crop yields with cutting-edge technology.
+            {t('features.subtitle')}
           </p>
         </div>
 
@@ -76,15 +79,15 @@ const Features: React.FC<FeaturesProps> = ({ isDarkMode, onGetStarted }) => {
         <div className="text-center mt-16">
           <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-gray-800 dark:to-gray-700 rounded-2xl p-8 sm:p-12 transition-colors duration-200">
             <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-4">
-              Ready to transform your farming?
+              {t('features.cta.title')}
             </h3>
             <p className="text-lg text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
-              Join thousands of farmers who have already improved their yields with Soil-Sync's intelligent analysis platform.
+              {t('features.cta.description')}
             </p>
             <button
               onClick={onGetStarted}
               className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
-              Start Your Free Trial
+              {t('features.cta.button')}
             </button>
           </div>
         </div>

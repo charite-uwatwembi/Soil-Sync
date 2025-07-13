@@ -1,5 +1,6 @@
 import { Target, TrendingUp, Zap } from 'lucide-react';
 import React from 'react';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface RecommendationCardProps {
   isDarkMode: boolean;
@@ -16,6 +17,8 @@ const RecommendationCard: React.FC<RecommendationCardProps> = ({
   isDarkMode, 
   recommendation 
 }) => {
+  const { t } = useLanguage();
+
   if (!recommendation) {
     return (
       <div className={`p-6 rounded-xl border ${
@@ -26,7 +29,7 @@ const RecommendationCard: React.FC<RecommendationCardProps> = ({
             isDarkMode ? 'text-gray-600' : 'text-gray-400'
           }`} />
           <p className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-            Submit soil data to get fertilizer recommendations
+            {t('recommendation.submitData')}
           </p>
         </div>
       </div>
@@ -42,9 +45,9 @@ const RecommendationCard: React.FC<RecommendationCardProps> = ({
           <Zap className="h-5 w-5 text-green-600" />
         </div>
         <div>
-          <h3 className="text-lg font-semibold">Latest Recommendation</h3>
+          <h3 className="text-lg font-semibold">{t('dashboard.latestRecommendation')}</h3>
           <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-            AI-powered fertilizer analysis
+            {t('dashboard.aiPowered')}
             {recommendation.cropName && (
               <span className="block font-medium text-green-700 dark:text-green-400 mt-1">
                 For {recommendation.cropName.charAt(0).toUpperCase() + recommendation.cropName.slice(1)}
@@ -61,7 +64,7 @@ const RecommendationCard: React.FC<RecommendationCardProps> = ({
         }`}>
           <div className="flex items-center space-x-2 mb-2">
             <Target className="h-4 w-4 text-green-600" />
-            <span className="text-sm font-medium text-green-600">Fertilizer</span>
+            <span className="text-sm font-medium text-green-600">{t('recommendation.fertilizer')}</span>
           </div>
           <p className="text-lg font-bold">{recommendation.fertilizer}</p>
         </div>
@@ -72,7 +75,7 @@ const RecommendationCard: React.FC<RecommendationCardProps> = ({
         }`}>
           <div className="flex items-center space-x-2 mb-2">
             <TrendingUp className="h-4 w-4 text-blue-600" />
-            <span className="text-sm font-medium text-blue-600">Rate</span>
+            <span className="text-sm font-medium text-blue-600">{t('recommendation.rate')}</span>
           </div>
           <p className="text-lg font-bold">{recommendation.rate} kg/ha</p>
         </div>
@@ -83,7 +86,7 @@ const RecommendationCard: React.FC<RecommendationCardProps> = ({
         }`}>
           <div className="flex items-center space-x-2 mb-2">
             <Zap className="h-4 w-4 text-purple-600" />
-            <span className="text-sm font-medium text-purple-600">Confidence</span>
+            <span className="text-sm font-medium text-purple-600">{t('recommendation.confidence')}</span>
           </div>
           <p className="text-lg font-bold">{recommendation.confidence} %</p>
         </div>
@@ -97,7 +100,7 @@ const RecommendationCard: React.FC<RecommendationCardProps> = ({
           <p className={`text-sm font-medium mb-1 ${
             isDarkMode ? 'text-gray-300' : 'text-gray-700'
           }`}>
-            Expected Yield Increase
+            {t('recommendation.expectedYield')}
           </p>
           <p className="text-2xl font-bold text-green-600">
            + {recommendation.expectedYield} %

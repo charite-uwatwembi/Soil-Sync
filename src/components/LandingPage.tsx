@@ -1,7 +1,6 @@
 import React from 'react';
 import Contact from './Contact';
 import Features from './Features';
-import Footer from './Footer';
 import Header from './Header';
 import Hero from './Hero';
 import Pricing from './Pricing';
@@ -34,8 +33,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ isDarkMode, onGetStarted, isA
         <Pricing isDarkMode={isDarkMode} />
         <Contact isDarkMode={isDarkMode} />
       </main>
-
-      <Footer isDarkMode={isDarkMode} onPageChange={onPageChange} />
     </div>
   );
 };

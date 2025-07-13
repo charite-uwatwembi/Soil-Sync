@@ -1,4 +1,4 @@
-import { Activity, AlertCircle, Brain, CheckCircle, Server, TrendingUp } from 'lucide-react';
+import { Activity, AlertCircle, Brain, CheckCircle, ChevronDown, ChevronUp, Server, TrendingUp } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { mlModelService } from '../services/mlModelService';
 
@@ -27,6 +27,10 @@ const MLModelIntegration: React.FC<MLModelIntegrationProps> = ({ isDarkMode }) =
   const [isLoadingAnalytics, setIsLoadingAnalytics] = useState(false);
   const [testResult, setTestResult] = useState<any>(null);
   const [isTestingModel, setIsTestingModel] = useState(false);
+  
+  // State for expandable lists
+  const [isCropDistributionExpanded, setIsCropDistributionExpanded] = useState(false);
+  const [isConfidenceDistributionExpanded, setIsConfidenceDistributionExpanded] = useState(false);
 
   useEffect(() => {
     loadModelHealth();
@@ -286,26 +290,82 @@ const MLModelIntegration: React.FC<MLModelIntegrationProps> = ({ isDarkMode }) =
           {/* Crop Distribution */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <h5 className="font-medium mb-2">Crop Distribution</h5>
+              <div className="flex items-center justify-between mb-2">
+                <h5 className="font-medium">Crop Distribution</h5>
+                <button
+                  onClick={() => {
+                    setIsCropDistributionExpanded(!isCropDistributionExpanded);
+                  }}
+                  className={`flex items-center space-x-1 text-sm ${
+                    isDarkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-500'
+                  } transition-colors`}
+                >
+                  <span>{isCropDistributionExpanded ? 'Show Less' : 'Show More'}</span>
+                  {isCropDistributionExpanded ? (
+                    <ChevronUp className="h-4 w-4" />
+                  ) : (
+                    <ChevronDown className="h-4 w-4" />
+                  )}
+                </button>
+              </div>
               <div className="space-y-2">
-                {Object.entries(analytics.cropDistribution).map(([crop, count]) => (
-                  <div key={crop} className="flex justify-between items-center">
-                    <span className="text-sm capitalize">{crop}</span>
-                    <span className="text-sm font-medium">{count}</span>
+                {(() => {
+                  const cropEntries = Object.entries(analytics.cropDistribution);
+                  const maxItems = isCropDistributionExpanded ? 100 : 5;
+                  const displayItems = cropEntries.slice(0, maxItems);
+                  
+                  return displayItems.map(([crop, count]) => (
+                    <div key={crop} className="flex justify-between items-center">
+                      <span className="text-sm capitalize">{crop}</span>
+                      <span className="text-sm font-medium">{count}</span>
+                    </div>
+                  ));
+                })()}
+                {!isCropDistributionExpanded && Object.entries(analytics.cropDistribution).length > 5 && (
+                  <div className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'} text-center pt-2`}>
+                    +{Object.entries(analytics.cropDistribution).length - 5} more items
                   </div>
-                ))}
+                )}
               </div>
             </div>
             
             <div>
-              <h5 className="font-medium mb-2">Confidence Distribution</h5>
+              <div className="flex items-center justify-between mb-2">
+                <h5 className="font-medium">Confidence Distribution</h5>
+                <button
+                  onClick={() => {
+                    setIsConfidenceDistributionExpanded(!isConfidenceDistributionExpanded);
+                  }}
+                  className={`flex items-center space-x-1 text-sm ${
+                    isDarkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-500'
+                  } transition-colors`}
+                >
+                  <span>{isConfidenceDistributionExpanded ? 'Show Less' : 'Show More'}</span>
+                  {isConfidenceDistributionExpanded ? (
+                    <ChevronUp className="h-4 w-4" />
+                  ) : (
+                    <ChevronDown className="h-4 w-4" />
+                  )}
+                </button>
+              </div>
               <div className="space-y-2">
-                {Object.entries(analytics.confidenceDistribution).map(([range, count]) => (
-                  <div key={range} className="flex justify-between items-center">
-                    <span className="text-sm">{range}</span>
-                    <span className="text-sm font-medium">{count}</span>
+                {(() => {
+                  const confidenceEntries = Object.entries(analytics.confidenceDistribution);
+                  const maxItems = isConfidenceDistributionExpanded ? 100 : 3;
+                  const displayItems = confidenceEntries.slice(0, maxItems);
+                  
+                  return displayItems.map(([range, count]) => (
+                    <div key={range} className="flex justify-between items-center">
+                      <span className="text-sm">{range}</span>
+                      <span className="text-sm font-medium">{count}</span>
+                    </div>
+                  ));
+                })()}
+                {!isConfidenceDistributionExpanded && Object.entries(analytics.confidenceDistribution).length > 3 && (
+                  <div className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'} text-center pt-2`}>
+                    +{Object.entries(analytics.confidenceDistribution).length - 3} more items
                   </div>
-                ))}
+                )}
               </div>
             </div>
           </div>

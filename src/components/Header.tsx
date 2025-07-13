@@ -1,5 +1,6 @@
-import { LogOut, Menu, Moon, Sprout, Sun, User, X } from 'lucide-react';
+import { Globe, LogOut, Menu, Moon, Sprout, Sun, User, X } from 'lucide-react';
 import React, { useState } from 'react';
+import { useLanguage } from '../contexts/LanguageContext';
 import { useTheme } from '../contexts/ThemeContext';
 
 interface HeaderProps {
@@ -12,6 +13,7 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ isAuthenticated, user, onSignOut, onAuthClick }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { isDark, toggleTheme } = useTheme();
+  const { language, toggleLanguage, t } = useLanguage();
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
@@ -46,24 +48,34 @@ const Header: React.FC<HeaderProps> = ({ isAuthenticated, user, onSignOut, onAut
               onClick={() => scrollToSection('features')}
               className="text-gray-600 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 transition-colors"
             >
-              Features
+              {t('landing.features')}
             </button>
             <button 
               onClick={() => scrollToSection('pricing')}
               className="text-gray-600 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 transition-colors"
             >
-              Pricing
+              {t('landing.pricing')}
             </button>
             <button 
               onClick={() => scrollToSection('contact')}
               className="text-gray-600 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 transition-colors"
             >
-              Contact
+              {t('landing.contact')}
             </button>
           </nav>
 
-          {/* Theme Toggle & Auth Section */}
+          {/* Language Toggle, Theme Toggle & Auth Section */}
           <div className="hidden md:flex items-center space-x-4">
+            <button
+              onClick={toggleLanguage}
+              className="flex items-center space-x-1 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              aria-label="Toggle language"
+            >
+              <Globe className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+              <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                {language === 'en' ? 'EN' : 'RW'}
+              </span>
+            </button>
             <button
               onClick={toggleTheme}
               className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
@@ -95,13 +107,23 @@ const Header: React.FC<HeaderProps> = ({ isAuthenticated, user, onSignOut, onAut
                 onClick={onAuthClick}
                 className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-2 rounded-lg font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
               >
-                Get Started
+                {t('landing.getStarted')}
               </button>
             )}
           </div>
 
           {/* Mobile Menu Button */}
           <div className="md:hidden flex items-center space-x-2">
+            <button
+              onClick={toggleLanguage}
+              className="flex items-center space-x-1 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              aria-label="Toggle language"
+            >
+              <Globe className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+              <span className="text-xs font-medium text-gray-600 dark:text-gray-300">
+                {language === 'en' ? 'EN' : 'RW'}
+              </span>
+            </button>
             <button
               onClick={toggleTheme}
               className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
@@ -134,19 +156,19 @@ const Header: React.FC<HeaderProps> = ({ isAuthenticated, user, onSignOut, onAut
                 onClick={() => scrollToSection('features')}
                 className="text-left text-gray-600 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 transition-colors"
               >
-                Features
+                {t('landing.features')}
               </button>
               <button 
                 onClick={() => scrollToSection('pricing')}
                 className="text-left text-gray-600 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 transition-colors"
               >
-                Pricing
+                {t('landing.pricing')}
               </button>
               <button 
                 onClick={() => scrollToSection('contact')}
                 className="text-left text-gray-600 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 transition-colors"
               >
-                Contact
+                {t('landing.contact')}
               </button>
               
               {isAuthenticated ? (
@@ -168,7 +190,7 @@ const Header: React.FC<HeaderProps> = ({ isAuthenticated, user, onSignOut, onAut
                   onClick={onAuthClick}
                   className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-2 rounded-lg font-medium transition-all duration-200 shadow-lg hover:shadow-xl w-full"
                 >
-                  Get Started
+                  {t('landing.getStarted')}
                 </button>
               )}
             </nav>

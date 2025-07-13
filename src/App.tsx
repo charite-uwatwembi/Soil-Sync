@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import AgriNews from './components/AgriNews';
 import AuthModal from './components/AuthModal';
 import DataTable from './components/DataTable';
 import Footer from './components/Footer';
@@ -16,6 +15,7 @@ import type { SoilModelInput } from './components/SoilForm';
 import SoilForm, { cropTypeOptions } from './components/SoilForm';
 import SoilVisualizationChart from './components/SoilVisualizationChart';
 import TopBar from './components/TopBar';
+import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import { authService, type AuthUser } from './services/authService';
 import { soilAnalysisService, type Recommendation, type SoilData } from './services/soilAnalysisService';
@@ -29,13 +29,18 @@ interface HistoryData {
   confidence: number;
 }
 
-function App() {
+function AppContent() {
   const { isDark: isDarkMode, toggleTheme: toggleDarkMode } = useTheme();
+  const { t } = useLanguage();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [activePage, setActivePage] = useState('Dashboard');
   const [currentRecommendation, setCurrentRecommendation] = useState<Recommendation | null>(null);
   const [currentSoilData, setCurrentSoilData] = useState<SoilData | null>(null);
-  const [historyData, setHistoryData] = useState<HistoryData[]>([]);
+  
+  // Separate session data (temporary - cleared on logout) from permanent data
+  const [sessionData, setSessionData] = useState<HistoryData[]>([]); // For Analysis Summary on Dashboard
+  const [historyData, setHistoryData] = useState<HistoryData[]>([]); // For Analysis History on History page
+  
   const [chartData, setChartData] = useState<Array<{
     date: string;
     fertilizer: string;
@@ -58,14 +63,17 @@ function App() {
       setUser(user);
       if (user) {
         setShowAuthModal(false); // Hide modal if user signs in
-        loadUserData(); // Load history and chart data on login
-        setCurrentRecommendation(null); // Clear current summary on login
-        setCurrentSoilData(null); // Clear current summary on login
+        loadUserData(); // Load permanent history data on login
+        setCurrentRecommendation(null); // Clear current recommendation on login
+        setCurrentSoilData(null); // Clear current soil data on login
+        setSessionData([]); // Clear session data on login (fresh session)
       } else {
-        setCurrentRecommendation(null); // Clear current recommendation
-        setCurrentSoilData(null); // Clear current soil data
-        setChartData([]); // Clear chart data
-        setHistoryData([]); // Clear history data explicitly on logout
+        // On logout: clear session data but keep permanent data structure
+        setCurrentRecommendation(null);
+        setCurrentSoilData(null);
+        setSessionData([]); // Clear session data on logout
+        setChartData([]);
+        setHistoryData([]); // Clear permanent data on logout
       }
       console.log('App.tsx: User state AFTER listener update:', user);
     });
@@ -76,16 +84,18 @@ function App() {
       setUser(currentUser);
       if (currentUser) {
         setShowAuthModal(false);
-        loadUserData(); // Load history and chart data on initial load if user exists
-        setCurrentRecommendation(null); // Explicitly clear current summary on initial load if user exists
-        setCurrentSoilData(null); // Explicitly clear current summary on initial load if user exists
+        loadUserData(); // Load permanent history data on initial load if user exists
+        setCurrentRecommendation(null);
+        setCurrentSoilData(null);
+        setSessionData([]); // Start with empty session data
       } else {
-        setCurrentRecommendation(null); // Ensure cleared on initial load if no user
-        setCurrentSoilData(null); // Ensure cleared on initial load if no user
-        setChartData([]); // Ensure cleared on initial load if no user
-        setHistoryData([]); // Ensure cleared on initial load if no user
+        setCurrentRecommendation(null);
+        setCurrentSoilData(null);
+        setSessionData([]);
+        setChartData([]);
+        setHistoryData([]);
       }
-      setIsLoadingAuth(false); // Set loading to false after initial check
+      setIsLoadingAuth(false);
       console.log('App.tsx: User state AFTER initial getCurrentUser check:', currentUser);
     });
 
@@ -113,65 +123,75 @@ function App() {
   // Load user's historical data
   const loadUserData = async () => {
     try {
+      console.log('loadUserData: Starting to load analysis history...');
       const analyses = await soilAnalysisService.getAnalysisHistory(100);
+      console.log('loadUserData: Raw analyses from database:', analyses);
+      
       const historyItems: HistoryData[] = analyses.map((analysis, index) => ({
         id: index + 1,
         date: new Date(analysis.createdAt).toLocaleDateString(),
-        cropType: analysis.soilData.Crop_Type,
+        cropType: analysis.cropName || analysis.soilData.Crop_Type,
         fertilizer: analysis.fertilizer,
         rate: Number(analysis.rate),
         confidence: Math.round(Number(analysis.confidence))
       }));
+      
+      console.log('loadUserData: Processed history items:', historyItems);
       setHistoryData(historyItems);
+      
       setChartData(historyItems.map(item => ({
         date: item.date,
         fertilizer: item.fertilizer,
         rate: item.rate,
         confidence: item.confidence
       })));
+      
+      console.log('loadUserData: History data and chart data updated');
     } catch (error) {
-      console.error('Failed to load user data:', error);
+      console.error('loadUserData: Failed to load user data:', error);
     }
   };
 
   const handleSoilSubmit = async (soilData: SoilModelInput) => {
     setLoading(true);
     try {
+      console.log('handleSoilSubmit: Starting soil analysis for:', soilData);
+      
       // Get prediction from the service
       const recommendation = await soilAnalysisService.predictFertilizer(soilData);
+      console.log('handleSoilSubmit: Got recommendation:', recommendation);
+      
       setCurrentRecommendation(recommendation);
       setCurrentSoilData(soilData);
 
-      // Save to database
+      // Save to database permanently
+      console.log('handleSoilSubmit: Attempting to save to database...');
       const newAnalysisId = await soilAnalysisService.saveAnalysis(soilData, recommendation);
+      console.log('handleSoilSubmit: Save completed with ID:', newAnalysisId);
 
-      // Refresh history from database to ensure persistence and consistency
+      // Refresh permanent history from database
+      console.log('handleSoilSubmit: Refreshing history data...');
       await loadUserData();
+      console.log('handleSoilSubmit: History data refreshed');
 
-      // Add to local state for immediate UI update
-      const newHistoryItem: HistoryData = {
-        id: Date.now(),
+      // Add to session data for immediate display in Analysis Summary
+      const newSessionItem: HistoryData = {
+        id: Date.now(), // Use timestamp for unique ID
         date: new Date().toLocaleDateString(),
         cropType: soilData.Crop_Type,
         fertilizer: recommendation.fertilizer,
-        rate: recommendation.rate as number,
+        rate: Number(recommendation.rate),
         confidence: Math.round(Number(recommendation.confidence))
       };
-
-      setHistoryData(prev => [newHistoryItem, ...prev]);
-
-      // Add to chart data
-      const newChartItem = {
-        date: new Date().toLocaleDateString(),
-        fertilizer: recommendation.fertilizer,
-        rate: recommendation.rate as number,
-        confidence: Math.round(Number(recommendation.confidence))
-      };
-
-      setChartData(prev => [...prev, newChartItem].slice(-10)); // Keep last 10 entries
+      console.log('handleSoilSubmit: Adding to session data:', newSessionItem);
+      setSessionData(prev => {
+        const updated = [newSessionItem, ...prev];
+        console.log('handleSoilSubmit: Session data updated:', updated);
+        return updated;
+      });
 
     } catch (error) {
-      console.error('Failed to process soil analysis:', error);
+      console.error('handleSoilSubmit: Failed to process soil analysis:', error);
       // You might want to show an error message to the user here
     } finally {
       setLoading(false);
@@ -189,20 +209,23 @@ function App() {
   };
 
   const handleSensorData = (sensorData: any) => {
-    console.log('Received sensor data:', sensorData);
+    console.log('handleSensorData: Received sensor data:', sensorData);
     const randomCropType = cropTypeOptions[Math.floor(Math.random() * cropTypeOptions.length)].value;
 
-    // Convert sensor data to soil data format (new model fields)
+    // Map sensor data format to soil data format
     const soilData: SoilData = {
-      Phosphorous: sensorData.phosphorus ?? 15,
-      Potassium: sensorData.potassium ?? 100,
-      Nitrogen: sensorData.nitrogen ?? 0.2,
-      Soil_Type: 'Loamy',
+      Phosphorous: sensorData.phosphorus ?? (Math.random() * 40 + 5), // 5-45 ppm
+      Potassium: sensorData.potassium ?? (Math.random() * 200 + 50), // 50-250 ppm
+      Nitrogen: sensorData.nitrogen ?? (Math.random() * 0.5 + 0.1), // 0.1-0.6%
+      Soil_Type: sensorData.soil_type ?? ['Sandy', 'Loamy', 'Clay'][Math.floor(Math.random() * 3)],
       Crop_Type: randomCropType,
-      Temparature: sensorData.temparature ?? 25,
-      Humidity: sensorData.humidity ?? 60,
-      Moisture: sensorData.moisture ?? 30
+      Temparature: sensorData.temperature ?? (Math.random() * 15 + 18), // Fix: use temperature not temparature
+      Humidity: sensorData.humidity ?? (Math.random() * 40 + 40), // 40-80%
+      Moisture: sensorData.soilMoisture ?? (Math.random() * 50 + 20) // Fix: use soilMoisture not moisture
     };
+    
+    console.log('handleSensorData: Generated soil data:', soilData);
+    
     // Auto-submit for analysis
     handleSoilSubmit(soilData);
   };
@@ -214,13 +237,13 @@ function App() {
   if (isLoadingAuth) {
     return (
       <div className={`min-h-screen flex items-center justify-center ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
-        <p>Loading authentication state...</p>
+        <p>{t('common.loading')}</p>
       </div>
     );
   }
 
   return (
-    <ThemeProvider>
+    <>
       {showAuthModal && (
         <AuthModal
           isOpen={showAuthModal}
@@ -236,25 +259,40 @@ function App() {
       )}
 
       {activePage === 'Privacy Policy' ? (
-        <PrivacyPolicy isDarkMode={isDarkMode} onPageChange={setActivePage} />
+        <>
+          <PrivacyPolicy isDarkMode={isDarkMode} onPageChange={setActivePage} />
+          <Footer onPageChange={setActivePage} />
+        </>
       ) : activePage === 'Terms of Service' ? (
-        <TermsOfService isDarkMode={isDarkMode} onPageChange={setActivePage} />
+        <>
+          <TermsOfService isDarkMode={isDarkMode} onPageChange={setActivePage} />
+          <Footer onPageChange={setActivePage} />
+        </>
       ) : activePage === 'Cookie Policy' ? (
-        <CookiePolicy isDarkMode={isDarkMode} onPageChange={setActivePage} />
+        <>
+          <CookiePolicy isDarkMode={isDarkMode} onPageChange={setActivePage} />
+          <Footer onPageChange={setActivePage} />
+        </>
       ) : activePage === 'Data Protection' ? (
-        <DataProtection isDarkMode={isDarkMode} onPageChange={setActivePage} />
+        <>
+          <DataProtection isDarkMode={isDarkMode} onPageChange={setActivePage} />
+          <Footer onPageChange={setActivePage} />
+        </>
       ) : !user ? (
-        <div className={`min-h-screen flex items-center justify-center ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
-          <LandingPage
-            isDarkMode={isDarkMode}
-            onGetStarted={() => openAuthModal('signIn')}
-            isAuthenticated={!!user}
-            user={user}
-            onSignOut={handleSignOut}
-            toggleDarkMode={toggleDarkMode}
-            onPageChange={setActivePage}
-          />
-        </div>
+        <>
+          <div className={`min-h-screen flex items-center justify-center ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
+            <LandingPage
+              isDarkMode={isDarkMode}
+              onGetStarted={() => openAuthModal('signIn')}
+              isAuthenticated={!!user}
+              user={user}
+              onSignOut={handleSignOut}
+              toggleDarkMode={toggleDarkMode}
+              onPageChange={setActivePage}
+            />
+          </div>
+          <Footer onPageChange={setActivePage} />
+        </>
       ) : (
         <div className={`flex min-h-screen ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
           <Sidebar 
@@ -265,7 +303,7 @@ function App() {
             onPageChange={setActivePage}
             onSignOut={handleSignOut}
           />
-          <div className={`flex flex-col flex-1 transition-all duration-300 ${isCollapsed ? 'ml-16' : 'ml-64'}`}>
+          <div className={`flex flex-col flex-1 transition-all duration-300 ${isCollapsed ? 'md:ml-16' : 'md:ml-64'}`}>
             <TopBar 
               isCollapsed={isCollapsed}
               setIsCollapsed={setIsCollapsed}
@@ -277,19 +315,19 @@ function App() {
               toggleSidebar={toggleSidebar}
               isSidebarOpen={isCollapsed}
             />
-            <main className={`flex-1 transition-all duration-300 p-6 mt-16`}>
+            <main className={`flex-1 transition-all duration-300 p-4 md:p-6 mt-16`}>
               <div className="max-w-7xl mx-auto">
                 {activePage === 'Dashboard' ? (
-                  <div className="space-y-6">
+                  <div className="space-y-4 md:space-y-6">
                     {/* Top Row - Current Recommendation */}
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                      <div className="lg:col-span-2">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+                      <div className="lg:col-span-2 order-2 lg:order-1">
                         <RecommendationCard 
                           isDarkMode={isDarkMode}
                           recommendation={currentRecommendation}
                         />
                       </div>
-                      <div>
+                      <div className="order-1 lg:order-2">
                         <SoilForm 
                           isDarkMode={isDarkMode}
                           onSubmit={handleSoilSubmit}
@@ -305,23 +343,29 @@ function App() {
                         recommendation={currentRecommendation}
                       />
                     </div>
-                    {/* Third Row - Chart and News */}
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                      <div className="lg:col-span-2">
-                        <RecommendationChart 
-                          isDarkMode={isDarkMode}
-                          data={chartData}
-                        />
-                      </div>
-                      <div>
-                        <AgriNews isDarkMode={isDarkMode} />
-                      </div>
-                    </div>
-                    {/* Bottom Row - Data Table */}
+                    {/* Third Row - Chart */}
                     <div>
+                      <RecommendationChart 
+                        isDarkMode={isDarkMode}
+                        data={sessionData.map(item => ({
+                          date: item.date,
+                          fertilizer: item.fertilizer,
+                          rate: item.rate,
+                          confidence: item.confidence
+                        }))}
+                      />
+                    </div>
+                    {/* Bottom Row - Analysis Summary (Session Data) */}
+                    <div>
+                      <div className="mb-4">
+                        <h3 className="text-lg font-semibold mb-2">{t('dashboard.analysisSummary')}</h3>
+                        <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                          {t('dashboard.batchProcessing')}
+                        </p>
+                      </div>
                       <DataTable 
                         isDarkMode={isDarkMode}
-                        data={historyData}
+                        data={sessionData}
                       />
                     </div>
                   </div>
@@ -331,6 +375,7 @@ function App() {
                     activePage={activePage}
                     onSensorData={handleSensorData}
                     historyData={historyData}
+                    user={user}
                   />
                 )}
               </div>
@@ -339,6 +384,16 @@ function App() {
           </div>
         </div>
       )}
+    </>
+  );
+}
+
+function App() {
+  return (
+    <ThemeProvider>
+      <LanguageProvider>
+        <AppContent />
+      </LanguageProvider>
     </ThemeProvider>
   );
 }

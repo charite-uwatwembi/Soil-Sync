@@ -29,7 +29,10 @@ class SoilAnalysisService {
   // Call the ML model prediction service
   async predictFertilizer(soilData: SoilModelInput): Promise<Recommendation> {
     try {
+      console.log('soilAnalysisService.predictFertilizer: Starting ML prediction for:', soilData);
       const prediction = await mlModelService.predict(soilData);
+      console.log('soilAnalysisService.predictFertilizer: ML prediction successful:', prediction);
+      
       return {
         fertilizer: prediction.fertilizer,
         rate: prediction.applicationRate,
@@ -40,9 +43,14 @@ class SoilAnalysisService {
         predictionId: prediction.predictionId
       };
     } catch (error) {
-      console.error('ML prediction service error:', error);
+      console.error('soilAnalysisService.predictFertilizer: ML prediction service error:', error);
+      console.log('soilAnalysisService.predictFertilizer: Falling back to rule-based prediction');
+      
       // Fallback to rule-based prediction
-      return this.fallbackPrediction(soilData);
+      const fallbackResult = this.fallbackPrediction(soilData);
+      console.log('soilAnalysisService.predictFertilizer: Fallback prediction result:', fallbackResult);
+      
+      return fallbackResult;
     }
   }
 
@@ -145,6 +153,7 @@ class SoilAnalysisService {
       rate: Math.round(rate),
       confidence: Math.round(confidence * 10) / 10,
       expectedYield: Math.round(expectedYield),
+      cropName: soilData.Crop_Type,
       modelVersion: 'fallback-v1.0.0',
       predictionId: crypto.randomUUID()
     };
@@ -178,9 +187,9 @@ class SoilAnalysisService {
         elevation: 0, // Assuming default or placeholder
         crop_type: soilData.Crop_Type,
         recommended_fertilizer: recommendation.fertilizer,
-        application_rate: Number(recommendation.rate),
-        confidence_score: Number(recommendation.confidence),
-        expected_yield_increase: Number(recommendation.expectedYield)
+        application_rate: Number(recommendation.rate) || 0,
+        confidence_score: Number(recommendation.confidence) || 0,
+        expected_yield_increase: Number(recommendation.expectedYield) || 0
       };
 
       console.log('SoilAnalysisService: Attempting to save analysis with data:', analysisData);
@@ -199,11 +208,6 @@ class SoilAnalysisService {
       return data?.[0]?.id || '';
     } catch (error) {
       console.error('SoilAnalysisService: Error in saveAnalysis function:', error);
-      // Ensure loadUserData is called only if save was successful and user is logged in, or handle its error separately
-      // For now, let's keep it here but note its dependency on App.tsx's loadUserData being correctly passed/accessible.
-      // Assuming loadUserData is available globally or passed correctly.
-      // Since this is in the service, it won't have direct access to App.tsx's loadUserData unless passed.
-      // The App.tsx handles the loadUserData() call after successful submit.
       return '';
     }
   }

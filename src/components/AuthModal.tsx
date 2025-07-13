@@ -1,5 +1,6 @@
 import { AlertCircle, ArrowLeft, Lock, Mail, User, X } from 'lucide-react';
 import React, { useState } from 'react';
+import { useLanguage } from '../contexts/LanguageContext';
 import { authService } from '../services/authService';
 
 interface AuthModalProps {
@@ -10,6 +11,7 @@ interface AuthModalProps {
 }
 
 const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthSuccess, isDarkMode }) => {
+  const { t } = useLanguage();
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -50,26 +52,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthSuccess, i
           <X className="h-6 w-6" />
         </button>
 
-        {/* Left: Welcome/Features (Removed as per design) */}
-        {/* <div className="hidden md:flex flex-col justify-center items-center w-1/2 bg-gradient-to-br from-green-600 to-emerald-600 text-white p-10">
-          <h1 className="text-3xl font-bold mb-4">Welcome to SoilSync</h1>
-          <p className="mb-8 text-lg text-center">Your smart companion for sustainable agriculture and soil management</p>
-          <ul className="space-y-6 w-full max-w-xs">
-            <li className="flex items-center space-x-3">
-              <CheckCircle className="h-6 w-6 text-white bg-green-700 rounded-full p-1" />
-              <span>Real-time soil analysis and recommendations</span>
-            </li>
-            <li className="flex items-center space-x-3">
-              <BarChart2 className="h-6 w-6 text-white bg-green-700 rounded-full p-1" />
-              <span>Advanced ML-powered predictions</span>
-            </li>
-            <li className="flex items-center space-x-3">
-              <Search className="h-6 w-6 text-white bg-green-700 rounded-full p-1" />
-              <span>Comprehensive soil health monitoring</span>
-            </li>
-          </ul>
-        </div> */}
-
         {/* Auth Form - now full width and centered */}
         <div className="flex flex-1 flex-col justify-center items-center p-8 overflow-y-auto w-full">
           <div className="w-full max-w-md rounded-xl shadow-none bg-white dark:bg-gray-800">
@@ -81,11 +63,11 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthSuccess, i
                 </button>
               )}
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white text-center flex-grow">
-                {isSignUp ? 'Create Account' : 'Welcome Back'}
+                {isSignUp ? t('auth.createAccount') : t('auth.welcomeBack')}
               </h2>
             </div>
             <p className="mb-6 text-gray-500 dark:text-gray-400 text-center">
-              {isSignUp ? 'Enter your details to create an account.' : 'Please enter your details.'}
+              {isSignUp ? t('auth.enterDetails') : t('auth.pleaseEnterDetails')}
             </p>
 
             {error && (
@@ -98,7 +80,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthSuccess, i
             <form onSubmit={handleSubmit} className="space-y-4">
               {isSignUp && (
                 <div>
-                  <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Full Name</label>
+                  <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('auth.fullName')}</label>
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500" />
                     <input
@@ -107,14 +89,14 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthSuccess, i
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
                       className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/20 transition-colors"
-                      placeholder="Enter your full name"
+                      placeholder={t('auth.enterFullName')}
                     />
                   </div>
                 </div>
               )}
 
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email Address</label>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('auth.emailAddress')}</label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500" />
                   <input
@@ -124,13 +106,13 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthSuccess, i
                     onChange={(e) => setEmail(e.target.value)}
                     required
                     className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/20 transition-colors"
-                    placeholder="Enter your email"
+                    placeholder={t('auth.enterEmail')}
                   />
                 </div>
               </div>
 
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password</label>
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('auth.password')}</label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500" />
                   <input
@@ -141,9 +123,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthSuccess, i
                     required
                     minLength={6}
                     className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/20 transition-colors"
-                    placeholder="Enter your password"
+                    placeholder={t('auth.enterPassword')}
                   />
-                  {/* Add eye icon for show/hide password if needed */}
                 </div>
               </div>
 
@@ -156,9 +137,9 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthSuccess, i
                     type="checkbox"
                     className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
                   />
-                  <label htmlFor="remember-me" className="ml-2 block text-gray-900 dark:text-gray-300">Remember me</label>
+                  <label htmlFor="remember-me" className="ml-2 block text-gray-900 dark:text-gray-300">{t('auth.rememberMe')}</label>
                 </div>
-                <button type="button" className="font-medium text-green-600 hover:text-green-500 dark:text-green-400 dark:hover:text-green-300">Forgot Password?</button>
+                <button type="button" className="font-medium text-green-600 hover:text-green-500 dark:text-green-400 dark:hover:text-green-300">{t('auth.forgotPassword')}</button>
               </div>
 
               <button
@@ -166,7 +147,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthSuccess, i
                 disabled={loading}
                 className="w-full bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 shadow-md"
               >
-                {loading ? 'Processing...' : (isSignUp ? 'Create Account' : 'Sign In')}
+                {loading ? t('auth.processing') : (isSignUp ? t('auth.createAccount') : t('auth.signIn'))}
               </button>
             </form>
 
@@ -176,7 +157,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthSuccess, i
                 <div className="w-full border-t border-gray-300 dark:border-gray-700"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">Or continue with</span>
+                <span className="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">{t('auth.orContinueWith')}</span>
               </div>
             </div>
 
@@ -184,9 +165,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthSuccess, i
             <div className="space-y-3">
               <button className="w-full flex items-center justify-center py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">
                 <img src="/google-icon.svg" alt="Google" className="h-5 w-5 mr-2" />
-                Sign in with Google
+                {t('auth.signInWithGoogle')}
               </button>
-              
             </div>
 
             <div className="mt-6 text-center text-sm">
@@ -194,7 +174,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthSuccess, i
                 onClick={() => setIsSignUp(!isSignUp)}
                 className="font-medium text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300"
               >
-                {isSignUp ? 'Already have an account? Sign in' : "Don't have an account? Sign up"}
+                {isSignUp ? t('auth.alreadyHaveAccount') : t('auth.dontHaveAccount')}
               </button>
             </div>
           </div>

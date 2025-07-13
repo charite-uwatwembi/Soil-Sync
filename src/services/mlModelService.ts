@@ -25,15 +25,19 @@ export interface ModelInfo {
   filePath?: string;
 }
 
+function capitalizeFirstLetter(str: string) {
+  if (!str) return str;
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+}
+
 class MLModelService {
   private modelEndpoint: string;
   private fallbackEnabled: boolean = true;
   private apiKey: string;
 
   constructor() {
-    // Use your deployed ML model server
+    // Use your deployed ML model server directly
     this.modelEndpoint = 'https://soil-sync-nq0s.onrender.com/predict';
-    
     this.apiKey = 'demo-key';
   }
 
@@ -41,18 +45,27 @@ class MLModelService {
   async predict(input: MLModelInput): Promise<MLModelOutput> {
     const startTime = Date.now();
     
+    // Start with fast fallback, then try to upgrade with ML model
+    const fallbackResult = this.enhancedFallbackPrediction(input, startTime);
+    
     try {
-      // Production: Use Supabase Edge Function that calls your deployed model
+      // Try to get ML prediction with timeout
       const prediction = await this.callProductionMLModel(input);
       const processingTime = Date.now() - startTime;
 
       const result: MLModelOutput = {
-        fertilizer: prediction.fertilizer_name || prediction.fertilizer,
-        applicationRate: prediction.application_rate,
-        confidenceScore: prediction.confidence,
-        expectedYieldIncrease: prediction.expected_yield_increase,
-        cropName: prediction.crop_name,
-        modelVersion: prediction.model_version,
+        fertilizer: prediction.fertilizer || fallbackResult.fertilizer,
+        // Fix: Extract numeric value from rate, removing units
+        applicationRate: typeof prediction.application_rate === 'string' 
+          ? parseFloat(prediction.application_rate.replace(/[^\d.]/g, '')) || fallbackResult.applicationRate
+          : prediction.application_rate || fallbackResult.applicationRate,
+        // Fix: Parse confidence as a number, strip % if present
+        confidenceScore: typeof prediction.confidence === 'string'
+          ? parseFloat(prediction.confidence.replace('%', '')) || fallbackResult.confidenceScore
+          : prediction.confidence || prediction.confidence_score || fallbackResult.confidenceScore,
+        expectedYieldIncrease: prediction.expected_yield_increase || fallbackResult.expectedYieldIncrease,
+        cropName: prediction.crop_name || input.Crop_Type,
+        modelVersion: prediction.model_version || 'v1.0.0',
         predictionId: prediction.prediction_id || crypto.randomUUID(),
         processingTime
       };
@@ -62,37 +75,49 @@ class MLModelService {
 
       return result;
     } catch (error) {
-      console.error('ML model prediction failed:', error);
-      
-      if (this.fallbackEnabled) {
-        console.log('Using enhanced fallback prediction model');
-        return this.enhancedFallbackPrediction(input, Date.now());
-      }
-      
-      throw new Error('ML model prediction failed and fallback is disabled');
+      console.error('ML model prediction failed, using fallback:', error);
+      // Return immediate fallback result for fast response
+      return fallbackResult;
     }
   }
 
-  // Call production ML model via Supabase Edge Function
+  // Directly call the Python backend with timeout
   private async callProductionMLModel(input: MLModelInput): Promise<any> {
-    const { data, error } = await supabase.functions.invoke('ml-model-server', {
-      body: {
-        Temparature: input.Temparature,
-        Humidity: input.Humidity,
-        Moisture: input.Moisture,
-        Soil_Type: input.Soil_Type,
-        Crop_Type: input.Crop_Type,
-        Nitrogen: input.Nitrogen,
-        Potassium: input.Potassium,
-        Phosphorous: input.Phosphorous
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+    
+    try {
+      const response = await fetch(this.modelEndpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          Temparature: input.Temparature,
+          Humidity: input.Humidity,
+          Moisture: input.Moisture,
+          Soil_Type: capitalizeFirstLetter(input.Soil_Type),
+          Crop_Type: capitalizeFirstLetter(input.Crop_Type),
+          Nitrogen: input.Nitrogen,
+          Potassium: input.Potassium,
+          Phosphorous: input.Phosphorous
+        }),
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) {
+        throw new Error(`Python ML API error: ${response.status} - ${await response.text()}`);
       }
-    });
-
-    if (error) {
-      throw new Error(`Production ML API error: ${error.message}`);
+      return await response.json();
+    } catch (error) {
+      clearTimeout(timeoutId);
+      if (error.name === 'AbortError') {
+        throw new Error('ML prediction request timed out');
+      }
+      throw error;
     }
-
-    return data;
   }
 
   // Enhanced fallback prediction with improved logic
@@ -108,36 +133,36 @@ class MLModelService {
     let confidence = 85;
     let expectedYield = 15;
 
-    // Enhanced decision logic based on soil science
+    // Enhanced decision logic based on soil science with improved confidence scoring
     if (Nitrogen < 0.15) {
       fertilizer = "Urea";
       rate = 120;
-      confidence = 94;
+      confidence = 92; // High confidence for clear nitrogen deficiency
       expectedYield = 25;
     } else if (Nitrogen < 0.25 && Phosphorous < 12) {
       fertilizer = "DAP";
       rate = 110;
-      confidence = 91;
+      confidence = 89; // High confidence for N+P deficiency
       expectedYield = 22;
     } else if (Phosphorous < 10) {
       fertilizer = "NPK 10-26-26";
       rate = 100;
-      confidence = 89;
+      confidence = 87; // High confidence for P deficiency
       expectedYield = 20;
     } else if (Potassium < 80) {
       fertilizer = "NPK 14-35-14";
       rate = 140;
-      confidence = 87;
+      confidence = 85; // High confidence for K deficiency
       expectedYield = 18;
     } else if (Potassium < 120 && Nitrogen > 0.3) {
       fertilizer = "NPK 20-20";
       rate = 130;
-      confidence = 90;
+      confidence = 88; // High confidence for balanced N+K
       expectedYield = 17;
     } else if (Phosphorous > 30) {
       fertilizer = "NPK 28-28";
       rate = 110;
-      confidence = 88;
+      confidence = 86; // High confidence for high P maintenance
       expectedYield = 19;
     }
 
@@ -224,14 +249,14 @@ class MLModelService {
         break;
     }
 
-    // Add realistic variance
+    // Add realistic variance but maintain higher confidence
     const variance = (Math.random() - 0.5) * 0.1;
     rate *= (1 + variance);
-    confidence += (Math.random() - 0.5) * 8;
+    confidence += (Math.random() - 0.5) * 4; // Reduced variance for more stable confidence
 
-    // Ensure reasonable bounds
+    // Ensure reasonable bounds with higher minimum confidence
     rate = Math.max(50, Math.min(300, rate));
-    confidence = Math.max(70, Math.min(98, confidence));
+    confidence = Math.max(82, Math.min(98, confidence)); // Increased minimum confidence from 70 to 82
     expectedYield = Math.max(5, Math.min(35, expectedYield));
 
     const processingTime = Date.now() - startTime;
@@ -241,6 +266,7 @@ class MLModelService {
       applicationRate: Math.round(rate),
       confidenceScore: Math.round(confidence * 10) / 10,
       expectedYieldIncrease: Math.round(expectedYield),
+      cropName: input.Crop_Type,
       modelVersion: 'enhanced-fallback-v2.0.0',
       predictionId: crypto.randomUUID(),
       processingTime
