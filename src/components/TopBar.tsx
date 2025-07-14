@@ -1,6 +1,7 @@
 import { Bell, Globe, LogOut, Menu, Moon, Search, Sun, User } from 'lucide-react';
 import React from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useNotifications } from '../contexts/NotificationContext';
 import type { AuthUser } from '../services/authService';
 
 interface TopBarProps {
@@ -27,6 +28,7 @@ const TopBar: React.FC<TopBarProps> = ({
   isSidebarOpen
 }) => {
   const { language, toggleLanguage, t } = useLanguage();
+  const { unreadCount, markAllAsRead } = useNotifications();
 
   return (
     <div className={`fixed top-0 right-0 left-0 z-50 h-16 ${
@@ -100,14 +102,20 @@ const TopBar: React.FC<TopBarProps> = ({
           </button>
 
           {/* Notifications - Hidden on small screens */}
-          <button className={`p-2 rounded-lg transition-colors hidden sm:block ${
-            isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'
-          }`}>
+          <button
+            onClick={markAllAsRead}
+            className={`p-2 rounded-lg transition-colors hidden sm:block ${
+              isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'
+            }`}
+            title={unreadCount ? `${unreadCount} unread` : 'No notifications'}
+          >
             <div className="relative">
               <Bell className="h-5 w-5" />
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-                1
-              </span>
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                  {unreadCount}
+                </span>
+              )}
             </div>
           </button>
 

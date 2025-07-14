@@ -14,7 +14,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
-CORS(app)  # This enables CORS for all routes
+CORS(app)  # Enable CORS for all origins during development
 
 TWILIO_AUTH_TOKEN = os.environ.get("TWILIO_AUTH_TOKEN")
 
@@ -220,6 +220,67 @@ def sms_reply():
         resp.message(f"Error processing your request: {str(e)}")
 
     return Response(str(resp), mimetype='application/xml')
+
+@app.route('/send-sms', methods=['POST'])
+def send_sms():
+    """Send outgoing SMS using Twilio"""
+    try:
+        from twilio.rest import Client
+        
+        # Get Twilio credentials from environment
+        account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
+        auth_token = os.environ.get('TWILIO_AUTH_TOKEN')
+        from_number = os.environ.get('TWILIO_PHONE_NUMBER', '+1 856 595 3915')
+        
+        if not account_sid or not auth_token:
+            return jsonify({
+                'success': False,
+                'error': 'Twilio credentials not configured'
+            }), 500
+        
+        # Get request data
+        data = request.get_json()
+        if not data:
+            return jsonify({
+                'success': False,
+                'error': 'No data provided'
+            }), 400
+        
+        to_number = data.get('to')
+        message_body = data.get('body') or data.get('message')
+        
+        if not to_number or not message_body:
+            return jsonify({
+                'success': False,
+                'error': 'Missing required fields: to and body/message'
+            }), 400
+        
+        # Initialize Twilio client
+        client = Client(account_sid, auth_token)
+        
+        # Send SMS
+        message = client.messages.create(
+            body=message_body,
+            from_=from_number,
+            to=to_number
+        )
+        
+        logger.info(f"SMS sent successfully to {to_number}, SID: {message.sid}")
+        
+        return jsonify({
+            'success': True,
+            'sid': message.sid,
+            'status': message.status,
+            'to': to_number,
+            'from': from_number
+        })
+        
+    except Exception as e:
+        logger.error(f"Failed to send SMS: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
 
 if __name__ == '__main__':
     load_dotenv()

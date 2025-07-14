@@ -4,6 +4,15 @@ import { defineConfig } from 'vite';
 
 export default defineConfig({
   plugins: [react()],
+  server: {
+    proxy: {
+      '/api/send-sms': {
+        target: 'https://soil-sync-nq0s.onrender.com', 
+        changeOrigin: true,
+        rewrite: (path) => '/send-sms'
+      }
+    }
+  },
   build: {
     outDir: 'dist',
   },

@@ -144,7 +144,7 @@ const AgriNews: React.FC<AgriNewsProps> = ({ isDarkMode }) => {
       </div>
 
       {/* News Articles */}
-      <div className="space-y-4 max-h-[600px] overflow-y-auto">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[600px] overflow-y-auto pr-1">
         {loading ? (
           <div className="space-y-4">
             {[1, 2, 3].map(i => (
@@ -169,13 +169,11 @@ const AgriNews: React.FC<AgriNewsProps> = ({ isDarkMode }) => {
           </div>
         ) : filteredArticles.length > 0 ? (
           filteredArticles.map((article) => (
-            <div 
+            <div
               key={article.id}
-              className={`group cursor-pointer transition-all duration-200 hover:scale-105 ${
-                isDarkMode ? 'hover:bg-gray-700/50' : 'hover:bg-gray-50'
-              } p-4 rounded-lg`}
+              className={`group cursor-pointer bg-cover bg-center rounded-xl overflow-hidden shadow hover:shadow-lg transition-transform hover:-translate-y-1 relative`} 
+              style={{ backgroundImage: `url(${article.imageUrl})` }}
               onClick={() => {
-                console.log('Card clicked', article.url);
                 if (article.url && article.url !== '#') {
                   window.open(article.url, '_blank', 'noopener,noreferrer');
                 } else {
@@ -183,63 +181,26 @@ const AgriNews: React.FC<AgriNewsProps> = ({ isDarkMode }) => {
                 }
               }}
             >
-              <div className="flex space-x-4">
-                <div className="flex-shrink-0">
-                  <img
-                    src={article.imageUrl}
-                    alt={article.title}
-                    className="w-16 h-16 rounded-lg object-cover"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.src = 'https://images.pexels.com/photos/2132227/pexels-photo-2132227.jpeg?auto=compress&cs=tinysrgb&w=400';
-                    }}
-                  />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h4 className="font-medium text-sm line-clamp-2 group-hover:text-green-600 transition-colors">
-                    {article.title}
-                  </h4>
-                  <p className={`text-xs mt-1 line-clamp-2 ${
-                    isDarkMode ? 'text-gray-400' : 'text-gray-600'
-                  }`}>
-                    {article.excerpt}
-                  </p>
-                  <div className={`flex items-center justify-between mt-2 text-xs ${
-                    isDarkMode ? 'text-gray-500' : 'text-gray-500'
-                  }`}>
-                    <div className="flex items-center space-x-3">
-                      <div className="flex items-center space-x-1">
-                        <User className="h-3 w-3" />
-                        <span>{article.author}</span>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <Calendar className="h-3 w-3" />
-                        <span>{new Date(article.publishedDate).toLocaleDateString()}</span>
-                      </div>
-                    </div>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      article.category === 'Government' ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400' :
-                      article.category === 'Research' ? 'bg-purple-100 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400' :
-                      article.category === 'Technology' ? 'bg-green-100 text-green-600 dark:bg-green-900/20 dark:text-green-400' :
-                      'bg-gray-100 text-gray-600 dark:bg-gray-900/20 dark:text-gray-400'
-                    }`}>
-                      {article.category}
-                    </span>
+              {/* Gradient overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+
+              {/* Content */}
+              <div className="relative flex flex-col justify-end h-48 p-4">
+                <h4 className="text-white font-semibold text-sm line-clamp-2 group-hover:text-green-300 transition-colors">
+                  {article.title}
+                </h4>
+                <div className="flex items-center justify-between mt-2 text-[10px] text-gray-200">
+                  <div className="flex items-center gap-2">
+                    <User className="h-3 w-3" />
+                    <span>{article.author}</span>
                   </div>
-                  {article.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {article.tags.slice(0, 3).map(tag => (
-                        <span
-                          key={tag}
-                          className={`text-xs px-2 py-1 rounded-full ${
-                            isDarkMode ? 'bg-gray-600 text-gray-300' : 'bg-gray-200 text-gray-600'
-                          }`}
-                        >
-                          #{tag}
-                        </span>
-                      ))}
-                    </div>
-                  )}
+                  <div className="flex items-center gap-1">
+                    <Calendar className="h-3 w-3" />
+                    <span>{new Date(article.publishedDate).toLocaleDateString()}</span>
+                  </div>
+                </div>
+                <div className="mt-1">
+                  <span className={`px-2 py-[2px] rounded-full text-[10px] font-medium backdrop-blur bg-white/20 text-white`}>{article.category}</span>
                 </div>
               </div>
             </div>

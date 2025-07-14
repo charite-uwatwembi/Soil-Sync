@@ -1,14 +1,14 @@
 import {
     BarChart3,
     Bell,
-    Database,
     FileText,
     HelpCircle,
     Home,
     LogOut,
     Sprout,
     TrendingUp,
-    User
+    User,
+    Zap
 } from 'lucide-react';
 import React from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -37,7 +37,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     { id: 'Dashboard', icon: Home, label: t('nav.dashboard') },
     { id: 'Analytics', icon: BarChart3, label: t('nav.analytics') },
     { id: 'Crops', icon: Sprout, label: t('nav.crops') },
-    { id: 'Soil Data', icon: Database, label: t('nav.soilData') },
+    { id: 'Virtual Sensors', icon: Zap, label: 'Virtual Sensors' },
     { id: 'Agriculture News', icon: TrendingUp, label: t('nav.agricultureNews') },
     { id: 'History', icon: FileText, label: t('nav.history') },
     { id: 'Alerts', icon: Bell, label: t('nav.alerts') },

@@ -16,9 +16,11 @@ import SoilForm, { cropTypeOptions } from './components/SoilForm';
 import SoilVisualizationChart from './components/SoilVisualizationChart';
 import TopBar from './components/TopBar';
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
+import { NotificationProvider, useNotifications } from './contexts/NotificationContext';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import { authService, type AuthUser } from './services/authService';
 import { soilAnalysisService, type Recommendation, type SoilData } from './services/soilAnalysisService';
+import { virtualSensorService } from './services/virtualSensorService';
 
 interface HistoryData {
   id: number;
@@ -50,6 +52,7 @@ function AppContent() {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { addNotification } = useNotifications();
   const [authMode, setAuthMode] = useState<'signIn' | 'signUp' | 'forgotPassword'>('signIn');
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
 
@@ -99,9 +102,24 @@ function AppContent() {
       console.log('App.tsx: User state AFTER initial getCurrentUser check:', currentUser);
     });
 
+    // Initialize virtual sensor network for SMS alerts
+    const initVirtualSensors = async () => {
+      try {
+        console.log('Initializing virtual sensor network...');
+        await virtualSensorService.createVirtualSensorNetwork();
+        console.log('Virtual sensor network initialized successfully');
+      } catch (error) {
+        console.error('Failed to initialize virtual sensor network:', error);
+      }
+    };
+
+    initVirtualSensors();
+
     return () => {
       console.log('App.tsx: useEffect cleanup - Unsubscribing auth state listener.');
       subscription.unsubscribe();
+      // Stop virtual sensor simulation on cleanup
+      virtualSensorService.stopSimulation();
     };
   }, []);
 
@@ -173,6 +191,13 @@ function AppContent() {
       console.log('handleSoilSubmit: Refreshing history data...');
       await loadUserData();
       console.log('handleSoilSubmit: History data refreshed');
+
+      // Notify user
+      addNotification({
+        title: 'Analysis Complete',
+        message: 'Fertilizer recommendation saved. Download it anytime from Analysis History.',
+        type: 'success'
+      });
 
       // Add to session data for immediate display in Analysis Summary
       const newSessionItem: HistoryData = {
@@ -407,7 +432,9 @@ function App() {
   return (
     <ThemeProvider>
       <LanguageProvider>
-        <AppContent />
+        <NotificationProvider>
+          <AppContent />
+        </NotificationProvider>
       </LanguageProvider>
     </ThemeProvider>
   );

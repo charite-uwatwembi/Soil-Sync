@@ -1,13 +1,16 @@
 import {
-    BarChart3,
-    Bell,
-    ChevronDown,
-    Database,
-    FileText,
-    HelpCircle,
-    Sprout,
-    TrendingUp,
-    User
+  AlertCircle,
+  BarChart3,
+  Bell,
+  CheckCircle,
+  ChevronDown,
+  Database,
+  FileText,
+  HelpCircle,
+  Info,
+  Sprout,
+  TrendingUp,
+  User
 } from 'lucide-react';
 import React, { useState } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -16,7 +19,9 @@ import AgriNews from './AgriNews';
 import DataTable from './DataTable';
 import IoTSimulator from './IoTSimulator';
 import MLModelIntegration from './MLModelIntegration';
-import SMSService from './SMSService';
+// SMSService removed – virtual sensors dashboard now handles SMS
+import { useNotifications } from '../contexts/NotificationContext';
+import VirtualSensorDashboard from './VirtualSensorDashboard';
 
 interface NavigationPagesProps {
   isDarkMode: boolean;
@@ -35,8 +40,9 @@ const NavigationPages: React.FC<NavigationPagesProps> = ({ isDarkMode, activePag
         return <AnalyticsPage isDarkMode={isDarkMode} />;
       case 'Crops':
         return <CropsPage isDarkMode={isDarkMode} />;
-      case 'Soil Data':
-        return <SoilDataPage isDarkMode={isDarkMode} onSensorData={onSensorData} />;
+      // Soil Data page removed – merged into Virtual Sensors
+      case 'Virtual Sensors':
+        return <VirtualSensorsPage isDarkMode={isDarkMode} onSensorData={onSensorData} />;
       case 'Agriculture News':
         return <AgricultureNewsPage isDarkMode={isDarkMode} />;
       case 'History':
@@ -52,11 +58,15 @@ const NavigationPages: React.FC<NavigationPagesProps> = ({ isDarkMode, activePag
       case 'API Reference':
         return <APIReferencePage isDarkMode={isDarkMode} />;
       default:
-        return null;
+        return <DashboardPage isDarkMode={isDarkMode} />;
     }
   };
 
-  return renderPage();
+  return (
+    <div className="p-4 md:p-6 overflow-y-auto">
+      {renderPage()}
+    </div>
+  );
 };
 
 // Dashboard Page (Placeholder - assuming it exists or will be created)
@@ -131,8 +141,8 @@ const CropsPage: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }) => {
           <div key={index} className={`p-4 md:p-6 rounded-xl border transition-all hover:shadow-lg ${
             isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
           }`}>
-            <div className="flex items-center space-x-4 mb-4">
-              <img src={crop.image} alt={crop.name} className="w-12 h-12 rounded-lg" />
+            <div className="flex items-center space-x-4 mb-6">
+              <img src={crop.image} alt={crop.name} className="w-36 h-36 rounded-lg object-cover" />
               <div>
                 <h3 className="font-semibold text-lg">{crop.name}</h3>
                 <p className={`text-sm ${
@@ -159,18 +169,22 @@ const CropsPage: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }) => {
   );
 };
 
-// Soil Data Page
-const SoilDataPage: React.FC<{ isDarkMode: boolean; onSensorData?: (data: any) => void }> = ({ isDarkMode, onSensorData }) => (
-  <div className="space-y-4 md:space-y-6">
-    <div className="flex items-center space-x-3 mb-4 md:mb-6">
-      <Database className="h-6 w-6 text-purple-600" />
-      <h2 className="text-xl md:text-2xl font-bold">Soil Data Management</h2>
-    </div>
-    
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+// Combined Virtual Sensors Page (IoT + SMS)
+const VirtualSensorsPage: React.FC<{ isDarkMode: boolean; onSensorData?: (data: any) => void }> = ({ isDarkMode, onSensorData }) => (
+  <div className="space-y-6">
+    {/* Soil Management Sensors (IoT) */}
+    <section>
+      <div className="flex items-center space-x-3 mb-4">
+        <Database className="h-6 w-6 text-purple-600" />
+        <h2 className="text-xl md:text-2xl font-bold">Soil Management Sensors</h2>
+      </div>
       <IoTSimulator isDarkMode={isDarkMode} onDataReceived={onSensorData} />
-      <SMSService isDarkMode={isDarkMode} />
-    </div>
+    </section>
+
+    {/* SMS-based Virtual Sensor Network */}
+    <section className="pt-6 border-t border-gray-300 dark:border-gray-700">
+      <VirtualSensorDashboard isDarkMode={isDarkMode} />
+    </section>
   </div>
 );
 
@@ -213,39 +227,81 @@ const HistoryPage: React.FC<{ isDarkMode: boolean; historyData: HistoryData[] }>
 );
 
 // Alerts Page
-const AlertsPage: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }) => (
-  <div className="space-y-4 md:space-y-6">
-    <div className="flex items-center space-x-3 mb-4 md:mb-6">
-      <Bell className="h-6 w-6 text-red-600" />
-      <h2 className="text-xl md:text-2xl font-bold">Alerts & Notifications</h2>
-    </div>
-    
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-      {[
-        { type: 'warning', title: 'Low Soil Moisture', message: 'Field A2 requires immediate irrigation', time: '2 hours ago' },
-        { type: 'info', title: 'Fertilizer Application Due', message: 'NPK application scheduled for tomorrow', time: '4 hours ago' },
-        { type: 'success', title: 'Optimal Growth Conditions', message: 'All monitored fields showing healthy growth', time: '1 day ago' },
-        { type: 'warning', title: 'Weather Alert', message: 'Heavy rainfall expected in 48 hours', time: '1 day ago' }
-      ].map((alert, index) => (
-        <div key={index} className={`p-4 md:p-6 rounded-xl border-l-4 ${
-          alert.type === 'warning' ? 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/10' :
-          alert.type === 'info' ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/10' :
-          'border-green-500 bg-green-50 dark:bg-green-900/10'
-        } ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
-          <div className="flex justify-between items-start mb-2">
-            <h3 className="font-semibold">{alert.title}</h3>
-            <span className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-              {alert.time}
-            </span>
-          </div>
-          <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-            {alert.message}
-          </p>
+const AlertsPage: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }) => {
+  const { notifications, markAllAsRead } = useNotifications();
+
+  const typeStyles: Record<string, string> = {
+    success: 'border-green-500 bg-green-50 dark:bg-green-900/10',
+    error: 'border-red-500 bg-red-50 dark:bg-red-900/10',
+    warning: 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/10',
+    info: 'border-blue-500 bg-blue-50 dark:bg-blue-900/10'
+  };
+
+  const typeIcon = (type?: string) => {
+    switch (type) {
+      case 'success':
+        return <CheckCircle className="h-4 w-4 text-green-600" />;
+      case 'error':
+        return <AlertCircle className="h-4 w-4 text-red-600" />;
+      case 'warning':
+        return <AlertCircle className="h-4 w-4 text-yellow-600" />;
+      default:
+        return <Info className="h-4 w-4 text-blue-600" />;
+    }
+  };
+
+  const timeAgo = (timestamp: number) => {
+    const diffMs = Date.now() - timestamp;
+    const diffMins = Math.floor(diffMs / 60000);
+    if (diffMins < 1) return 'just now';
+    if (diffMins < 60) return `${diffMins} min ago`;
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours < 24) return `${diffHours} h ago`;
+    const diffDays = Math.floor(diffHours / 24);
+    return `${diffDays} d ago`;
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center space-x-3">
+          <Bell className="h-6 w-6 text-red-600" />
+          <h2 className="text-2xl font-bold">Alerts & Notifications</h2>
         </div>
-      ))}
+        {notifications.length > 0 && (
+          <button
+            onClick={markAllAsRead}
+            className="text-sm px-3 py-1 rounded-md bg-green-600 text-white hover:bg-green-700"
+          >
+            Mark all read
+          </button>
+        )}
+      </div>
+
+      {notifications.length === 0 ? (
+        <p className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>No notifications yet.</p>
+      ) : (
+        <div className="space-y-3">
+          {notifications.map((n) => (
+            <div
+              key={n.id}
+              className={`p-4 rounded-lg border-l-4 ${typeStyles[n.type || 'info']} ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}
+            >
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-2">
+                  {typeIcon(n.type)}
+                  <h3 className="font-semibold">{n.title}</h3>
+                </div>
+                <span className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>{timeAgo(n.timestamp)}</span>
+              </div>
+              <p className={`text-sm mt-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>{n.message}</p>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
-  </div>
-);
+  );
+};
 
 // Profile Page (formerly SettingsPage)
 const ProfilePage: React.FC<{ isDarkMode: boolean; user: AuthUser | null }> = ({ isDarkMode, user }) => {
