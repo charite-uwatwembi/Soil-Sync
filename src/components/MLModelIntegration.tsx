@@ -1,9 +1,11 @@
 import { Activity, AlertCircle, Brain, CheckCircle, ChevronDown, ChevronUp, Server, TrendingUp } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
+import { adminService } from '../services/adminService';
 import { mlModelService } from '../services/mlModelService';
 
 interface MLModelIntegrationProps {
   isDarkMode: boolean;
+  isAdmin?: boolean;
 }
 
 interface ModelHealth {
@@ -20,7 +22,7 @@ interface ModelAnalytics {
   confidenceDistribution: Record<string, number>;
 }
 
-const MLModelIntegration: React.FC<MLModelIntegrationProps> = ({ isDarkMode }) => {
+const MLModelIntegration: React.FC<MLModelIntegrationProps> = ({ isDarkMode, isAdmin }) => {
   const [modelHealth, setModelHealth] = useState<ModelHealth | null>(null);
   const [analytics, setAnalytics] = useState<ModelAnalytics | null>(null);
   const [isLoadingHealth, setIsLoadingHealth] = useState(false);
@@ -31,6 +33,8 @@ const MLModelIntegration: React.FC<MLModelIntegrationProps> = ({ isDarkMode }) =
   // State for expandable lists
   const [isCropDistributionExpanded, setIsCropDistributionExpanded] = useState(false);
   const [isConfidenceDistributionExpanded, setIsConfidenceDistributionExpanded] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadMessage, setUploadMessage] = useState<string>('');
 
   useEffect(() => {
     loadModelHealth();
@@ -91,6 +95,19 @@ const MLModelIntegration: React.FC<MLModelIntegrationProps> = ({ isDarkMode }) =
     } finally {
       setIsTestingModel(false);
     }
+  };
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.name.endsWith('.pkl')) { setUploadMessage('Please choose a .pkl file'); return; }
+    setUploading(true); setUploadMessage('');
+    try {
+      const path = await adminService.uploadModel(file);
+      setUploadMessage(`Model uploaded to ${path}. Implement retraining server-side.`);
+    } catch (err:any) {
+      setUploadMessage(err.message || 'Upload failed');
+    } finally { setUploading(false); }
   };
 
   const getStatusColor = (status: string) => {
@@ -252,6 +269,8 @@ const MLModelIntegration: React.FC<MLModelIntegrationProps> = ({ isDarkMode }) =
         </div>
       </div>
 
+      
+
       {/* Model Analytics */}
       {analytics && (
         <div className="mb-6">
@@ -371,46 +390,71 @@ const MLModelIntegration: React.FC<MLModelIntegrationProps> = ({ isDarkMode }) =
           </div>
         </div>
       )}
+      {isAdmin && (
+        <div className="mb-6">
+          <h4 className="font-medium mb-3 flex items-center space-x-2">
+            <TrendingUp className="h-4 w-4 text-purple-600" />
+            <span>Upload New Model (.pkl)</span>
+          </h4>
+          <input type="file" accept=".pkl" onChange={handleUpload} className="mb-2" />
+          {uploading && <p className="text-sm text-gray-500">Uploading...</p>}
+          {uploadMessage && <p className="text-sm text-green-600 dark:text-green-400">{uploadMessage}</p>}
+        </div>
+      )}
 
-      {/* Troubleshooting Tips */}
-      <div>
-        <h4 className="font-medium mb-3 flex items-center space-x-2">
-          <AlertCircle className="h-4 w-4 text-orange-600" />
-          <span>Troubleshooting Tips</span>
-        </h4>
-        
-        <div className={`p-4 rounded-lg ${isDarkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
-          <div className="space-y-3 text-sm">
-            <div>
-              <p className="font-medium mb-1">1. High Response Time?</p>
-              <p className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                Your ML model server on Render might be experiencing a cold start. Wait a moment and try refreshing the status.
-              </p>
-            </div>
-            
-            <div>
-              <p className="font-medium mb-1">2. Prediction Errors?</p>
-              <p className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                Check the logs of your Supabase Edge Function (`ml-model-server`) and your Render.com ML server for detailed error messages.
-              </p>
-            </div>
-            
-            <div>
-              <p className="font-medium mb-1">3. API Key or Endpoint Issues?</p>
-              <p className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                Ensure the `ML_MODEL_ENDPOINT` and `ML_MODEL_API_KEY` secrets are correctly set in your Supabase Edge Functions environment variables.
-              </p>
-            </div>
-            
-            <div>
-              <p className="font-medium mb-1">4. Data Mismatch?</p>
-              <p className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                Verify that the input data format sent to the ML model matches what your model expects.
-              </p>
+      {!isAdmin && (
+        <div className="mt-6">
+          <h4 className="font-medium mb-3 flex items-center space-x-2">
+            <AlertCircle className="h-4 w-4 text-orange-600" />
+            <span>Troubleshooting Tips</span>
+          </h4>
+          
+          <div className={`p-4 rounded-lg ${isDarkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
+            <div className="space-y-3 text-sm">
+              <div>
+                <p className="font-medium mb-1">1. High Response Time?</p>
+                <p className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                  Your ML model server on Render might be experiencing a cold start. Wait a moment and try refreshing the status.
+                </p>
+              </div>
+              
+              <div>
+                <p className="font-medium mb-1">2. Prediction Errors?</p>
+                <p className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                  Check the logs of your Supabase Edge Function (`ml-model-server`) and your Render.com ML server for detailed error messages.
+                </p>
+              </div>
+              
+              <div>
+                <p className="font-medium mb-1">3. API Key or Endpoint Issues?</p>
+                <p className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                  Ensure the `ML_MODEL_ENDPOINT` and `ML_MODEL_API_KEY` secrets are correctly set in your Supabase Edge Functions environment variables.
+                </p>
+              </div>
+              
+              <div>
+                <p className="font-medium mb-1">4. Data Mismatch?</p>
+                <p className={`${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                  Verify that the input data format sent to the ML model matches what your model expects.
+                </p>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
+
+      {isAdmin && (
+        <div className="mt-6 p-4 rounded-lg border border-purple-300 dark:border-purple-700 bg-purple-50 dark:bg-purple-900/10 text-sm space-y-2">
+          <p><strong>Retraining workflow:</strong></p>
+          <ol className="list-decimal list-inside space-y-1">
+            <li>Export a new <code>.pkl</code> model from your Jupyter/Notebook after training.</li>
+            <li>Upload it here – the file is stored in the <code>ml-models</code> bucket.</li>
+            <li>A background job (your Render/Edge Function) should watch this bucket, move the file to <code>python-ml-server/ML_Models</code> and restart the container.</li>
+            <li>Once the server reloads the file, the health card above will display the new version.</li>
+          </ol>
+          <p>You can automate steps 3-4 with a Supabase function or GitHub Action.</p>
+        </div>
+      )}
     </div>
   );
 };

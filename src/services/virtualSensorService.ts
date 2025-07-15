@@ -156,7 +156,7 @@ class VirtualSensorService {
         location: { latitude: -1.9441, longitude: 30.0619, city: 'Kigali', district: 'Nyarugenge' },
         crop_type: 'maize',
         soil_type: 'Loamy',
-        farmer_phone: '+250788123456',
+        farmer_phone: '+250785870914',
         farmer_name: 'Jean Baptiste',
         field_name: 'North Field',
         planting_date: '2024-01-15',
@@ -187,7 +187,7 @@ class VirtualSensorService {
         location: { latitude: -2.5958, longitude: 29.7392, city: 'Huye', district: 'Huye' },
         crop_type: 'rice',
         soil_type: 'Clay',
-        farmer_phone: '+250788345678',
+        farmer_phone: '+250726774493',
         farmer_name: 'Paul Uwimana',
         field_name: 'Main Paddy',
         planting_date: '2024-02-01',
@@ -203,7 +203,7 @@ class VirtualSensorService {
         location: { latitude: -1.4987, longitude: 29.6359, city: 'Musanze', district: 'Musanze' },
         crop_type: 'potato',
         soil_type: 'Sandy',
-        farmer_phone: '+250788456789',
+        farmer_phone: '+250788473123',
         farmer_name: 'Agnes Mukamana',
         field_name: 'Highland Field',
         planting_date: '2024-01-25',
@@ -219,7 +219,7 @@ class VirtualSensorService {
         location: { latitude: -1.6792, longitude: 29.2664, city: 'Rubavu', district: 'Rubavu' },
         crop_type: 'beans',
         soil_type: 'Loamy',
-        farmer_phone: '+250788567890',
+        farmer_phone: '+250789951064',
         farmer_name: 'Emmanuel Habimana',
         field_name: 'Valley Field',
         planting_date: '2024-02-10',
@@ -566,6 +566,14 @@ class VirtualSensorService {
               type: 'success'
             });
           }
+
+          // Log to database
+          await supabase.from('sms_logs').insert({
+            to_number: phoneNumber,
+            body: message,
+            status: 'sent',
+            sid: result.sid
+          });
           console.log(`📱 Check your phone (${phoneNumber}) for the message!`);
         } else {
           const errorText = await response.text();
@@ -594,6 +602,13 @@ class VirtualSensorService {
             });
           }
         }
+        
+        // Log simulated SMS
+        await supabase.from('sms_logs').insert({
+          to_number: phoneNumber,
+          body: message,
+          status: 'simulated'
+        });
         
         // Log success
         console.log(`✅ SMS simulated successfully to ${phoneNumber}`);

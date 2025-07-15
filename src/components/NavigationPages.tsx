@@ -1,27 +1,31 @@
 import {
-  AlertCircle,
-  BarChart3,
-  Bell,
-  CheckCircle,
-  ChevronDown,
-  Database,
-  FileText,
-  HelpCircle,
-  Info,
-  Sprout,
-  TrendingUp,
-  User
+    AlertCircle,
+    BarChart3,
+    Bell,
+    CheckCircle,
+    ChevronDown,
+    Database,
+    FileText,
+    HelpCircle,
+    Info,
+    ShieldCheck,
+    Sprout,
+    TrendingUp,
+    User
 } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
-import { authService, type AuthUser } from '../services/authService';
+import { authService, type AuthUser, isAdminUser } from '../services/authService';
 import AgriNews from './AgriNews';
 import DataTable from './DataTable';
 import IoTSimulator from './IoTSimulator';
 import MLModelIntegration from './MLModelIntegration';
 // SMSService removed – virtual sensors dashboard now handles SMS
 import { useNotifications } from '../contexts/NotificationContext';
+import { adminService } from '../services/adminService';
+import { analyticsService } from '../services/analyticsService';
 import VirtualSensorDashboard from './VirtualSensorDashboard';
+import AdminHealthPanel from './admin/AdminHealthPanel';
 
 interface NavigationPagesProps {
   isDarkMode: boolean;
@@ -37,7 +41,7 @@ const NavigationPages: React.FC<NavigationPagesProps> = ({ isDarkMode, activePag
       case 'Dashboard':
         return <DashboardPage isDarkMode={isDarkMode} />;
       case 'Analytics':
-        return <AnalyticsPage isDarkMode={isDarkMode} />;
+        return <AnalyticsPage isDarkMode={isDarkMode} user={user} />;
       case 'Crops':
         return <CropsPage isDarkMode={isDarkMode} />;
       // Soil Data page removed – merged into Virtual Sensors
@@ -57,6 +61,8 @@ const NavigationPages: React.FC<NavigationPagesProps> = ({ isDarkMode, activePag
         return <DocumentationPage isDarkMode={isDarkMode} />;
       case 'API Reference':
         return <APIReferencePage isDarkMode={isDarkMode} />;
+      case 'Admin':
+        return <AdminDashboard isDarkMode={isDarkMode} user={user} />;
       default:
         return <DashboardPage isDarkMode={isDarkMode} />;
     }
@@ -78,35 +84,53 @@ const DashboardPage: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }) => (
 );
 
 // Analytics Page
-const AnalyticsPage: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }) => (
-  <div className="space-y-4 md:space-y-6">
-    <div className="flex items-center space-x-3 mb-4 md:mb-6">
-      <BarChart3 className="h-6 w-6 text-blue-600" />
-      <h2 className="text-xl md:text-2xl font-bold">Analytics Dashboard</h2>
-    </div>
-    
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-      {[
-        { title: 'Total Analyses', value: '1,247', change: '+12%', color: 'blue' },
-        { title: 'Avg Confidence', value: '94.2%', change: '+2.1%', color: 'green' },
-        { title: 'Yield Improvement', value: '18.5%', change: '+3.2%', color: 'purple' },
-        { title: 'Active Farmers', value: '5', change: '+8%', color: 'orange' }
-      ].map((stat, index) => (
-        <div key={index} className={`p-4 md:p-6 rounded-xl border ${
-          isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
-        }`}>
-          <h3 className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-            {stat.title}
-          </h3>
-          <p className="text-xl md:text-2xl font-bold mt-2">{stat.value}</p>
-          <p className={`text-sm mt-1 text-${stat.color}-600`}>{stat.change} from last month</p>
-        </div>
-      ))}
-    </div>
+const AnalyticsPage: React.FC<{ isDarkMode: boolean; user: AuthUser | null }> = ({ isDarkMode, user }) => {
+  const { t } = useLanguage();
+  const [dashStats,setDashStats]=useState<{loading:boolean;data?:any}>({loading:true});
 
-    <MLModelIntegration isDarkMode={isDarkMode} />
-  </div>
-);
+  useEffect(()=>{
+    const load=async()=>{
+      const stats=await analyticsService.getStats(isAdminUser(user)?undefined:user?.id);
+      setDashStats({loading:false,data:stats});
+    };
+    load();
+  },[user]);
+  
+  return (
+    <div className="space-y-4 md:space-y-6">
+      <div className="flex items-center space-x-3 mb-4 md:mb-6">
+        <BarChart3 className="h-6 w-6 text-blue-600" />
+        <h2 className="text-xl md:text-2xl font-bold">Analytics Dashboard</h2>
+      </div>
+      
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+        {(dashStats.loading?[
+          { title:'Total Analyses',value:'…',color:'blue'},
+          { title:'Avg Confidence',value:'…',color:'green'},
+          { title:'Yield Improvement',value:'…',color:'purple'},
+          { title:'Active Farmers',value:'…',color:'orange'}]
+          :[{
+            title:'Total Analyses',value:dashStats.data.totalAnalyses.toLocaleString(),color:'blue'},
+            {title:'Avg Confidence',value:`${dashStats.data.avgConfidence}%`,color:'green'},
+            {title:'Yield Improvement',value:`${dashStats.data.yieldImprovement}%`,color:'purple'},
+            {title:'Active Farmers',value:dashStats.data.activeFarmers,color:'orange'}])
+        .map((stat,index)=>(
+          <div key={index} className={`p-4 md:p-6 rounded-xl border ${
+            isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+          }`}>
+            <h3 className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+              {stat.title}
+            </h3>
+            <p className="text-xl md:text-2xl font-bold mt-2">{stat.value}</p>
+            {/* change removed for simplicity */}
+          </div>
+        ))}
+      </div>
+
+      <MLModelIntegration isDarkMode={isDarkMode} isAdmin={isAdminUser(user)} />
+    </div>
+  );
+};
 
 // Crops Page
 const CropsPage: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }) => {
@@ -894,6 +918,61 @@ const APIReferencePage: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }) => 
           ))}
         </div>
       </div>
+    </div>
+  );
+};
+
+// Admin Dashboard
+const AdminDashboard: React.FC<{ isDarkMode: boolean; user: AuthUser | null }> = ({ isDarkMode, user }) => {
+  const [stats, setStats] = useState<{users:number;sms:number;sensors:number;loading:boolean}>({users:0,sms:0,sensors:0,loading:true});
+
+  useEffect(()=>{
+    const load=async()=>{
+      const [u,s,sens]=await Promise.all([
+        adminService.getTotalUsers(),
+        adminService.getSmsSent(),
+        adminService.getActiveSensorCount()
+      ]);
+      setStats({users:u,sms:s,sensors:sens,loading:false});
+    };
+    if(user?.role==='admin') load();
+  },[user]);
+
+  if (user?.role !== 'admin') {
+    return (
+      <div className="flex flex-col items-center justify-center h-full text-center space-y-4">
+        <ShieldCheck className="h-12 w-12 text-red-600" />
+        <h2 className="text-xl font-semibold">Access Denied</h2>
+        <p className={isDarkMode ? 'text-gray-400' : 'text-gray-600'}>You do not have permission to view this page.</p>
+      </div>
+    );
+  }
+
+  const cards=[
+    {title:'Total Users',value:stats.loading?'…':stats.users},
+    {title:'SMS Sent',value:stats.loading?'…':stats.sms},
+    {title:'Active Sensors',value:stats.loading?'…':stats.sensors}
+  ];
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center space-x-3 mb-4">
+        <ShieldCheck className="h-6 w-6 text-green-600" />
+        <h2 className="text-2xl font-bold">Admin Panel</h2>
+      </div>
+
+      <AdminHealthPanel isDarkMode={isDarkMode} />
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
+        {cards.map(stat=>(
+          <div key={stat.title} className={`p-6 rounded-xl border ${isDarkMode?'bg-gray-800 border-gray-700':'bg-white border-gray-200'}`}>
+            <h3 className={isDarkMode?'text-gray-400':'text-gray-600'}>{stat.title}</h3>
+            <p className="text-2xl font-bold mt-2">{stat.value}</p>
+          </div>
+        ))}
+      </div>
+
+      <p className={isDarkMode?'text-gray-400':'text-gray-600'}>More admin tools coming soon...</p>
     </div>
   );
 };

@@ -44,41 +44,42 @@ class MLModelService {
   // Main prediction method using your actual joblib model
   async predict(input: MLModelInput): Promise<MLModelOutput> {
     const startTime = Date.now();
-    
-    // Start with fast fallback, then try to upgrade with ML model
-    const fallbackResult = this.enhancedFallbackPrediction(input, startTime);
-    
+    let result: MLModelOutput | null = null;
+
     try {
-      // Try to get ML prediction with timeout
+      // Attempt production model
       const prediction = await this.callProductionMLModel(input);
       const processingTime = Date.now() - startTime;
 
-      const result: MLModelOutput = {
-        fertilizer: prediction.fertilizer || fallbackResult.fertilizer,
-        // Fix: Extract numeric value from rate, removing units
+      result = {
+        fertilizer: prediction.fertilizer ?? prediction.fertilizer_name,
         applicationRate: typeof prediction.application_rate === 'string' 
-          ? parseFloat(prediction.application_rate.replace(/[^\d.]/g, '')) || fallbackResult.applicationRate
-          : prediction.application_rate || fallbackResult.applicationRate,
-        // Fix: Parse confidence as a number, strip % if present
+          ? parseFloat(prediction.application_rate.replace(/[^\d.]/g, ''))
+          : prediction.application_rate,
         confidenceScore: typeof prediction.confidence === 'string'
-          ? parseFloat(prediction.confidence.replace('%', '')) || fallbackResult.confidenceScore
-          : prediction.confidence || prediction.confidence_score || fallbackResult.confidenceScore,
-        expectedYieldIncrease: prediction.expected_yield_increase || fallbackResult.expectedYieldIncrease,
+          ? parseFloat(prediction.confidence.replace('%', ''))
+          : prediction.confidence || prediction.confidence_score,
+        expectedYieldIncrease: prediction.expected_yield_increase,
         cropName: prediction.crop_name || input.Crop_Type,
         modelVersion: prediction.model_version || 'v1.0.0',
         predictionId: prediction.prediction_id || crypto.randomUUID(),
         processingTime
-      };
-
-      // Log the prediction
-      await this.logPrediction(input, result);
-
-      return result;
+      } as MLModelOutput;
     } catch (error) {
       console.error('ML model prediction failed, using fallback:', error);
-      // Return immediate fallback result for fast response
-      return fallbackResult;
+      result = this.enhancedFallbackPrediction(input, startTime);
     }
+
+    // Always attempt to log the prediction
+    try {
+      if (result) {
+        await this.logPrediction(input, result);
+      }
+    } catch (e) {
+      console.error('Failed to log prediction:', e);
+    }
+
+    return result as MLModelOutput;
   }
 
   // Directly call the Python backend with timeout

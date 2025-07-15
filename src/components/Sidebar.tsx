@@ -5,6 +5,7 @@ import {
     HelpCircle,
     Home,
     LogOut,
+    ShieldCheck,
     Sprout,
     TrendingUp,
     User,
@@ -42,6 +43,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     { id: 'History', icon: FileText, label: t('nav.history') },
     { id: 'Alerts', icon: Bell, label: t('nav.alerts') },
     { id: 'Settings', icon: User, label: t('nav.profile') },
+    ...(user && user.role === 'admin' ? [{ id: 'Admin', icon: ShieldCheck, label: 'Admin Panel' }] : []),
     { id: 'Help', icon: HelpCircle, label: t('nav.help') }
   ];
 

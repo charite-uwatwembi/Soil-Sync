@@ -182,7 +182,7 @@ class SmsSchedulingService {
         break;
     }
     
-    message += `\n📞 Help: +250-788-SOIL`;
+    message += `\n📞 Help: +250-789-951-064`;
     
     return message;
   }
@@ -322,7 +322,7 @@ class SmsSchedulingService {
       message += `⚠️ Action Required: Please check your fields\n\n`;
     }
     
-    message += `📞 Help: +250-788-SOIL\n`;
+    message += `📞 Help: +250-789-951-064\n`;
     message += `💬 Text HELP for more info`;
     
     return message;

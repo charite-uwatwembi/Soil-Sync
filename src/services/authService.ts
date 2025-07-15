@@ -6,7 +6,10 @@ export interface AuthUser {
   fullName?: string;
   avatarUrl?: string;
   planType: string;
+  role?: string;
 }
+
+export const isAdminUser = (user?: AuthUser | null) => user?.role === 'admin';
 
 class AuthService {
   // Sign up with email and password
@@ -85,6 +88,7 @@ class AuthService {
         fullName: user.user_metadata?.full_name,
         avatarUrl: user.user_metadata?.avatar_url,
         planType: user.user_metadata?.plan_type || 'free',
+        role: (user.app_metadata as any)?.role || 'user',
       };
     }
     return null;
@@ -198,6 +202,7 @@ class AuthService {
           fullName: supabaseUser.user_metadata?.full_name,
           avatarUrl: supabaseUser.user_metadata?.avatar_url,
           planType: supabaseUser.user_metadata?.plan_type || 'free',
+          role: (supabaseUser.app_metadata as any)?.role || 'user',
         };
         callback(user);
       } else {
