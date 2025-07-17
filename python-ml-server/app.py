@@ -182,11 +182,31 @@ def build_npk_recommendation(crop: str, area: float, location: str, lat: Optiona
     else:
         weather_msg = 'Apply as recommended.'
 
+    fert_name = _get_recommended_fertilizer(crop_key)
+
     return (
         f"{crop_key} on {area} ha ({soil_type} soil):\n"
-        f"N {dose_n} kg, P {dose_p} kg, K {dose_k} kg.\n"
+        f"Recommended fertilizer: {fert_name}\n"
+        f"Dose → N {dose_n} kg, P {dose_p} kg, K {dose_k} kg.\n"
         f"{weather_msg}"
     )
+
+# Simple crop→recommended fertilizer mapping (generic blends)
+FERTILIZER_RECS = {
+    'Beans': 'NPK 14-28-14',
+    'Wheat': 'NPK 17-17-17',
+    'Maize': 'NPK 20-10-10',
+    'Rice': 'NPK 16-16-16',
+    'Sugarcane': 'NPK 18-18-18',
+    'Cotton': 'NPK 12-24-12',
+    'Barley': 'NPK 17-17-17',
+    'Millets': 'NPK 14-28-14',
+    'Pulses': 'NPK 14-28-14',
+    'Ground Nuts': 'NPK 14-28-14',
+}
+
+def _get_recommended_fertilizer(crop: str) -> str:
+    return FERTILIZER_RECS.get(crop.title(), 'NPK 17-17-17')
 
 
 class FertilizerModelServer:
