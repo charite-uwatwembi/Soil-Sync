@@ -24,8 +24,8 @@ import MLModelIntegration from './MLModelIntegration';
 import { useNotifications } from '../contexts/NotificationContext';
 import { adminService } from '../services/adminService';
 import { analyticsService } from '../services/analyticsService';
-import VirtualSensorDashboard from './VirtualSensorDashboard';
 import AdminHealthPanel from './admin/AdminHealthPanel';
+import SMSService from './SMSService';
 
 interface NavigationPagesProps {
   isDarkMode: boolean;
@@ -166,7 +166,7 @@ const CropsPage: React.FC<{ isDarkMode: boolean }> = ({ isDarkMode }) => {
             isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
           }`}>
             <div className="flex items-center space-x-4 mb-6">
-              <img src={crop.image} alt={crop.name} className="w-36 h-36 rounded-lg object-cover" />
+              <img src={crop.image} alt={crop.name} className="w-24 h-24 md:w-32 md:h-32 lg:w-36 lg:h-36 rounded-lg object-cover" />
               <div>
                 <h3 className="font-semibold text-lg">{crop.name}</h3>
                 <p className={`text-sm ${
@@ -205,9 +205,9 @@ const VirtualSensorsPage: React.FC<{ isDarkMode: boolean; onSensorData?: (data: 
       <IoTSimulator isDarkMode={isDarkMode} onDataReceived={onSensorData} />
     </section>
 
-    {/* SMS-based Virtual Sensor Network */}
+    {/* SMS Fertilizer Service */}
     <section className="pt-6 border-t border-gray-300 dark:border-gray-700">
-      <VirtualSensorDashboard isDarkMode={isDarkMode} />
+      <SMSService isDarkMode={isDarkMode} />
     </section>
   </div>
 );

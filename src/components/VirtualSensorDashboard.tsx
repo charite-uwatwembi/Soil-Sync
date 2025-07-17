@@ -213,7 +213,7 @@ const VirtualSensorDashboard: React.FC<VirtualSensorDashboardProps> = ({ isDarkM
       </div>
 
       {/* Virtual Sensors Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
         {sensors.map((sensor) => (
           <div key={sensor.id} className={`p-4 rounded-lg border ${
             isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
