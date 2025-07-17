@@ -370,52 +370,20 @@ def sms_reply():
                     'p': 'Phosphorous',
                     'phosphorous': 'Phosphorous',
                     'k': 'Potassium',
-                    'potassium': 'Potassium',
-                    'area': 'Area',
-                    'hectares': 'Area',
-                    'size': 'Area',
-                    'location': 'Location',
-                    'loc': 'Location',
-                    'lat': 'Lat',
-                    'latitude': 'Lat',
-                    'lon': 'Lon',
-                    'longitude': 'Lon'
+                    'potassium': 'Potassium'
                 }
                 mapped_key = key_map.get(key, key)
                 data[mapped_key] = value
                 logger.debug(f"Parsed key={key} mapped to {mapped_key} with value={value}")
 
         # Convert numeric fields
-        for field in ['Temparature', 'Humidity', 'Moisture', 'Nitrogen', 'Potassium', 'Phosphorous', 'Area', 'Lat', 'Lon']:
+        for field in ['Temparature', 'Humidity', 'Moisture', 'Nitrogen', 'Potassium', 'Phosphorous']:
             if field in data:
                 data[field] = float(data[field])
 
         # --- Decide which recommendation pathway to follow ---
-        location_key = 'Location' if 'Location' in data else ('location' if 'location' in data else None)
-        logger.info(f"Incoming SMS body: {incoming_msg}")
-        logger.info(f"Parsed data: {data}")
-        logger.info("Path decision - custom recommendation" if ('Crop_Type' in data and 'Area' in data and (location_key is not None or ('Lat' in data and 'Lon' in data))) else "Path decision - ML or invalid")
-        if 'Crop_Type' in data and 'Area' in data and (
-            location_key is not None or ('Lat' in data and 'Lon' in data)
-        ):
-            crop = data['Crop_Type']
-            area = data['Area']
-
-            # Pick the right location field (may be missing if lat/lon provided)
-            location = (data.get(location_key) or '').strip() if location_key else ''
-            lat_val = data.get('Lat')
-            lon_val = data.get('Lon')
-
-            try:
-                reply = build_npk_recommendation(crop, area, location, lat_val, lon_val)
-                resp.message(reply)
-                return Response(str(resp), mimetype='application/xml')
-            except Exception as exc:
-                # If any error occurs in recommendation flow fall back to generic message
-                logger.error(f"Recommendation error: {exc}")
-                resp.message("Sorry, we couldn't generate a recommendation at the moment.")
-                return Response(str(resp), mimetype='application/xml')
-
+        # The original code had a custom recommendation branch here, but it's removed.
+        # Now, it will always predict using the ML model.
         # Check for missing fields
         missing_fields = [col for col in MODEL_COLUMNS if col not in data]
         if missing_fields:
