@@ -8,6 +8,8 @@ from flask_cors import CORS
 from dotenv import load_dotenv
 from twilio.request_validator import RequestValidator
 from twilio.twiml.messaging_response import MessagingResponse
+import requests
+from typing import Optional
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -17,6 +19,7 @@ app = Flask(__name__)
 CORS(app)  # Enable CORS for all origins during development
 
 TWILIO_AUTH_TOKEN = os.environ.get("TWILIO_AUTH_TOKEN")
+OPENWEATHER_API_KEY = os.environ.get("OPENWEATHER_API_KEY")
 
 MODEL_COLUMNS = [
     'Temparature', 'Humidity', 'Moisture', 'Soil_Type', 'Crop_Type',
@@ -29,6 +32,162 @@ crop_type_map = {
     'Tobacco': 5, 'Paddy': 6, 'Barley': 7, 'Millets': 8, 'Oil seeds': 9, 
     'Pulses': 10, 'Ground Nuts': 11
 }
+
+# --- Nutrient recommendation tables & helper utilities ---
+# Base nutrient requirements per hectare (kg/ha) for common crops
+BASE_NPK_REQUIREMENTS = {
+    'Wheat': {'N': 120, 'P': 60, 'K': 40},
+    'Rice': {'N': 100, 'P': 50, 'K': 50},
+    'Maize': {'N': 90,  'P': 45, 'K': 35},
+    'Sugarcane': {'N': 140, 'P': 70, 'K': 90},
+    'Cotton': {'N': 60,  'P': 30, 'K': 30},
+    'Barley': {'N': 80,  'P': 40, 'K': 30},
+    'Millets': {'N': 50,  'P': 25, 'K': 20},
+    'Pulses': {'N': 20,  'P': 40, 'K': 20},
+    'Ground Nuts': {'N': 30, 'P': 60, 'K': 30},
+}
+
+# Soil-type multipliers to adjust base dose (simplified)
+SOIL_TYPE_MULTIPLIERS = {
+    'Sandy': 1.10,
+    'Loamy': 1.00,
+    'Clay': 0.90,
+    'Clayey': 0.90,
+    'Black': 1.00,
+    'Red': 1.05,
+}
+
+# Dominant soil type for common Rwandan districts / cities (extend as needed)
+REGION_SOIL_MAP = {
+    # Kigali City
+    'kigali': 'Loamy',
+    'gasabo': 'Loamy',
+    'kicukiro': 'Loamy',
+    'nyarugenge': 'Loamy',
+    # Northern Province
+    'musanze': 'Volcanic',
+    'gicumbi': 'Clay',
+    'rulindo': 'Loamy',
+    'burera': 'Volcanic',
+    'gakenke': 'Loamy',
+    # Southern Province
+    'nyanza': 'Clay',
+    'huye': 'Clay',
+    'rusizi': 'Sandy',
+    'nyaruguru': 'Loamy',
+    # Eastern Province
+    'kayonza': 'Sandy',
+    'nyagatare': 'Sandy',
+    'rwamagana': 'Loamy',
+    'ngoma': 'Loamy',
+    # Western Province
+    'rubavu': 'Volcanic',
+    'rutsiro': 'Loamy',
+    'karongi': 'Loamy',
+    'nyabihu': 'Volcanic',
+}
+
+# Treat volcanic soils similar to Loamy for multiplier purposes
+SOIL_TYPE_MULTIPLIERS.setdefault('Volcanic', 1.00)
+
+RWANDA_BOUNDS = {
+    'min_lat': -2.9,
+    'max_lat': -1.0,
+    'min_lon': 28.8,
+    'max_lon': 30.9,
+}
+
+# Helper
+def _is_within_rwanda(lat: float, lon: float) -> bool:
+    if lat is None or lon is None:
+        return False
+    return (
+        RWANDA_BOUNDS['min_lat'] <= lat <= RWANDA_BOUNDS['max_lat'] and
+        RWANDA_BOUNDS['min_lon'] <= lon <= RWANDA_BOUNDS['max_lon']
+    )
+
+
+def _get_coordinates(place: str):
+    """Return (lat, lon) for a place name using OpenWeather Geo API."""
+    if not place or not OPENWEATHER_API_KEY:
+        return None, None
+    try:
+        place_q = place + ",RW" if "," not in place else place  # force Rwanda country code
+        url = (
+            "https://api.openweathermap.org/geo/1.0/direct"
+            f"?q={place_q}&limit=1&appid={OPENWEATHER_API_KEY}"
+        )
+        r = requests.get(url, timeout=5)
+        r.raise_for_status()
+        data = r.json()
+        if data:
+            return data[0]["lat"], data[0]["lon"]
+    except Exception as exc:
+        logger.warning(f"Geo lookup failed for {place}: {exc}")
+    return None, None
+
+
+def _check_weather(lat: float, lon: float):
+    """Classify upcoming 24-h weather as heavy_rain / dry / normal."""
+    if lat is None or lon is None or not OPENWEATHER_API_KEY or not _is_within_rwanda(lat, lon):
+        return "normal"
+    try:
+        url = (
+            "https://api.openweathermap.org/data/2.5/forecast"
+            f"?lat={lat}&lon={lon}&appid={OPENWEATHER_API_KEY}"
+        )
+        r = requests.get(url, timeout=5)
+        r.raise_for_status()
+        forecast = r.json().get("list", [])[:8]  # ~24 hours (3-h steps)
+        heavy_rain = any(entry.get("rain", {}).get("3h", 0) >= 5 for entry in forecast)
+        any_rain = any(entry.get("rain", {}).get("3h", 0) > 0 for entry in forecast)
+        if heavy_rain:
+            return "heavy_rain"
+        if not any_rain:
+            return "dry"
+        return "normal"
+    except Exception as exc:
+        logger.warning(f"Weather lookup failed: {exc}")
+        return "normal"
+
+
+def _get_soil_type_for_location(place: str):
+    return REGION_SOIL_MAP.get(place.lower(), 'Loamy')
+
+
+def build_npk_recommendation(crop: str, area: float, location: str, lat: Optional[float] = None, lon: Optional[float] = None):
+    """Return one-text nutrient recommendation string."""
+    crop_key = crop.title()
+    base = BASE_NPK_REQUIREMENTS.get(crop_key, BASE_NPK_REQUIREMENTS['Wheat'])
+    soil_type = _get_soil_type_for_location(location)
+    multiplier = SOIL_TYPE_MULTIPLIERS.get(soil_type, 1.0)
+
+    dose_n = round(base['N'] * multiplier * area)
+    dose_p = round(base['P'] * multiplier * area)
+    dose_k = round(base['K'] * multiplier * area)
+
+    # Weather consideration
+    if lat is None or lon is None:
+        lat, lon = _get_coordinates(location)
+
+    # Override if outside Rwanda
+    if not _is_within_rwanda(lat, lon):
+        lat = lon = None
+    weather_flag = _check_weather(lat, lon)
+
+    if weather_flag == 'heavy_rain':
+        weather_msg = 'Heavy rain expected — delay or split the dose.'
+    elif weather_flag == 'dry':
+        weather_msg = 'Dry spell ahead — irrigate before applying.'
+    else:
+        weather_msg = 'Apply as recommended.'
+
+    return (
+        f"{crop_key} on {area} ha ({soil_type} soil):\n"
+        f"N {dose_n} kg, P {dose_p} kg, K {dose_k} kg.\n"
+        f"{weather_msg}"
+    )
+
 
 class FertilizerModelServer:
     def __init__(self):
@@ -191,15 +350,51 @@ def sms_reply():
                     'p': 'Phosphorous',
                     'phosphorous': 'Phosphorous',
                     'k': 'Potassium',
-                    'potassium': 'Potassium'
+                    'potassium': 'Potassium',
+                    'area': 'Area',
+                    'hectares': 'Area',
+                    'size': 'Area',
+                    'location': 'Location',
+                    'loc': 'Location',
+                    'lat': 'Lat',
+                    'latitude': 'Lat',
+                    'lon': 'Lon',
+                    'longitude': 'Lon'
                 }
                 mapped_key = key_map.get(key, key)
                 data[mapped_key] = value
+                logger.debug(f"Parsed key={key} mapped to {mapped_key} with value={value}")
 
         # Convert numeric fields
-        for field in ['Temparature', 'Humidity', 'Moisture', 'Nitrogen', 'Potassium', 'Phosphorous']:
+        for field in ['Temparature', 'Humidity', 'Moisture', 'Nitrogen', 'Potassium', 'Phosphorous', 'Area', 'Lat', 'Lon']:
             if field in data:
                 data[field] = float(data[field])
+
+        # --- Decide which recommendation pathway to follow ---
+        location_key = 'Location' if 'Location' in data else ('location' if 'location' in data else None)
+        logger.info(f"Incoming SMS body: {incoming_msg}")
+        logger.info(f"Parsed data: {data}")
+        logger.info("Path decision - custom recommendation" if ('Crop_Type' in data and 'Area' in data and (location_key is not None or ('Lat' in data and 'Lon' in data))) else "Path decision - ML or invalid")
+        if 'Crop_Type' in data and 'Area' in data and (
+            location_key is not None or ('Lat' in data and 'Lon' in data)
+        ):
+            crop = data['Crop_Type']
+            area = data['Area']
+
+            # Pick the right location field (may be missing if lat/lon provided)
+            location = (data.get(location_key) or '').strip() if location_key else ''
+            lat_val = data.get('Lat')
+            lon_val = data.get('Lon')
+
+            try:
+                reply = build_npk_recommendation(crop, area, location, lat_val, lon_val)
+                resp.message(reply)
+                return Response(str(resp), mimetype='application/xml')
+            except Exception as exc:
+                # If any error occurs in recommendation flow fall back to generic message
+                logger.error(f"Recommendation error: {exc}")
+                resp.message("Sorry, we couldn't generate a recommendation at the moment.")
+                return Response(str(resp), mimetype='application/xml')
 
         # Check for missing fields
         missing_fields = [col for col in MODEL_COLUMNS if col not in data]

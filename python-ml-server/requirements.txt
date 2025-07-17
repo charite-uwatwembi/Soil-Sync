@@ -9,3 +9,4 @@ uvicorn
 flask_cors
 python-dotenv
 twilio
+requests
