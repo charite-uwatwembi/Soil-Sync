@@ -103,7 +103,7 @@ const RecommendationCard: React.FC<RecommendationCardProps> = ({
             {t('recommendation.expectedYield')}
           </p>
           <p className="text-2xl font-bold text-green-600">
-           + {recommendation.expectedYield} %
+           +{recommendation.expectedYield} %
           </p>
         </div>
       </div>

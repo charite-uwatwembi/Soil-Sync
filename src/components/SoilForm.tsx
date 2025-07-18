@@ -89,12 +89,13 @@ const SoilForm: React.FC<SoilFormProps> = ({ isDarkMode, onSubmit, loading }) =>
         {/* Temperature and Humidity */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className={`block text-sm font-medium mb-2 ${
+            <label htmlFor="temperature" className={`block text-sm font-medium mb-2 ${
               isDarkMode ? 'text-gray-300' : 'text-gray-700'
             }`}>
               {t('form.temperature')}
             </label>
             <input
+              id="temperature"
               type="number"
               value={formData.Temparature}
               onChange={(e) => handleChange('Temparature', parseFloat(e.target.value))}
@@ -107,12 +108,13 @@ const SoilForm: React.FC<SoilFormProps> = ({ isDarkMode, onSubmit, loading }) =>
             />
           </div>
           <div>
-            <label className={`block text-sm font-medium mb-2 ${
+            <label htmlFor="humidity" className={`block text-sm font-medium mb-2 ${
               isDarkMode ? 'text-gray-300' : 'text-gray-700'
             }`}>
               {t('form.humidity')}
             </label>
             <input
+              id="humidity"
               type="number"
               value={formData.Humidity}
               onChange={(e) => handleChange('Humidity', parseFloat(e.target.value))}
@@ -197,12 +199,13 @@ const SoilForm: React.FC<SoilFormProps> = ({ isDarkMode, onSubmit, loading }) =>
             </select>
           </div>
           <div>
-            <label className={`block text-sm font-medium mb-2 ${
+            <label htmlFor="nitrogen" className={`block text-sm font-medium mb-2 ${
               isDarkMode ? 'text-gray-300' : 'text-gray-700'
             }`}>
               {t('form.nitrogen')}
             </label>
             <input
+              id="nitrogen"
               type="number"
               step="0.01"
               value={formData.Nitrogen}

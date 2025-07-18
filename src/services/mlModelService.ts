@@ -1,4 +1,4 @@
-import type { SoilModelInput } from '../components/SoilForm';
+import type { ModelInput } from '../components/SoilForm';
 import { supabase } from '../lib/supabase';
 
 export interface MLModelInput extends SoilModelInput {}
@@ -51,11 +51,14 @@ class MLModelService {
       const prediction = await this.callProductionMLModel(input);
       const processingTime = Date.now() - startTime;
 
+      // Normalise numeric values coming from the Python server
+      const parsedRate = typeof prediction.application_rate === 'string'
+        ? parseFloat(prediction.application_rate.replace(/[^\d.]/g, ''))
+        : prediction.application_rate;
+
       result = {
         fertilizer: prediction.fertilizer ?? prediction.fertilizer_name,
-        applicationRate: typeof prediction.application_rate === 'string' 
-          ? parseFloat(prediction.application_rate.replace(/[^\d.]/g, ''))
-          : prediction.application_rate,
+        applicationRate: parsedRate,
         confidenceScore: typeof prediction.confidence === 'string'
           ? parseFloat(prediction.confidence.replace('%', ''))
           : prediction.confidence || prediction.confidence_score,
@@ -65,6 +68,17 @@ class MLModelService {
         predictionId: prediction.prediction_id || crypto.randomUUID(),
         processingTime
       } as MLModelOutput;
+
+      /*
+       * SAFETY NET: If the production model returns a placeholder / default
+       * result (e.g. a constant 150 kg/ha rate for every request), switch to
+       * the smarter heuristic fallback to generate more meaningful,
+       * sensor-specific recommendations.
+       */
+      if (parsedRate === 150) {
+        console.warn('[mlModelService] Detected constant 150 kg/ha rate from production model – falling back to heuristic model.');
+        result = this.enhancedFallbackPrediction(input, startTime);
+      }
     } catch (error) {
       console.error('ML model prediction failed, using fallback:', error);
       result = this.enhancedFallbackPrediction(input, startTime);
