@@ -25,7 +25,7 @@ class GridWorldEnv(gym.Env):
         high = np.array([self.w - 1, self.h - 1] * ((4 + 2 * self.n_obs) // 2), dtype=np.float32)
         self.observation_space = spaces.Box(low=low, high=high, dtype=np.float32)
 
-        self.action_space = spaces.Discrete(4)  # N,S,W,E
+        self.action_space = spaces.Discrete(4)  # N, S, W, E
 
         self.agent_pos: Tuple[int, int] | None = None
         self.goal_pos: Tuple[int, int] | None = None
@@ -36,22 +36,52 @@ class GridWorldEnv(gym.Env):
         self.max_steps = 200
         self.step_count = 0
 
-    # -----------------------------------------------------
     def reset(self, *, seed: int | None = None, options: dict | None = None):
         super().reset(seed=seed)
         rng = np.random.default_rng(seed)
         self.step_count = 0
+
         # Place agent, goal, obstacles
         self.agent_pos = (rng.integers(0, self.w), rng.integers(0, self.h))
         self.goal_pos = (rng.integers(0, self.w), rng.integers(0, self.h))
         while self.goal_pos == self.agent_pos:
             self.goal_pos = (rng.integers(0, self.w), rng.integers(0, self.h))
+
         self.obstacles = []
         while len(self.obstacles) < self.n_obs:
             pos = (rng.integers(0, self.w), rng.integers(0, self.h))
             if pos != self.agent_pos and pos != self.goal_pos and pos not in self.obstacles:
                 self.obstacles.append(pos)
+
         return self._get_obs(), {}
+
+    def step(self, action: int):
+        if self.agent_pos is None:
+            raise ValueError("agent_pos is None — did you forget to call env.reset()?")
+
+        self.step_count += 1
+        terminated = False
+        truncated = False
+        reward = self.step_penalty
+
+        # agent move
+        self.agent_pos = self._move(self.agent_pos, action)
+
+        # obstacle move
+        self._obstacle_step()
+
+        # check for collision or goal
+        if self.agent_pos in self.obstacles:
+            terminated = True
+            reward += self.collision_penalty
+        elif self.agent_pos == self.goal_pos:
+            terminated = True
+            reward += self.goal_reward
+
+        if self.step_count >= self.max_steps:
+            truncated = True
+
+        return self._get_obs(), reward, terminated, truncated, {}
 
     def _move(self, pos: Tuple[int, int], action: int) -> Tuple[int, int]:
         x, y = pos
@@ -66,10 +96,12 @@ class GridWorldEnv(gym.Env):
         return (x, y)
 
     def _obstacle_step(self):
+        if self.agent_pos is None:
+            raise ValueError("agent_pos is None — did you forget to call env.reset()?")
+
         new_obstacles = []
         ax, ay = self.agent_pos
         for (ox, oy) in self.obstacles:
-            # move 1 step toward agent (greedy)
             dx = np.sign(ax - ox)
             dy = np.sign(ay - oy)
             if np.abs(ax - ox) > np.abs(ay - oy):
@@ -81,43 +113,16 @@ class GridWorldEnv(gym.Env):
             new_obstacles.append((ox, oy))
         self.obstacles = new_obstacles
 
-    def step(self, action: int):
-        self.step_count += 1
-        terminated = False
-        truncated = False
-        reward = self.step_penalty  # small negative each step
-
-        # agent move
-        self.agent_pos = self._move(self.agent_pos, action)
-
-        # obstacles move every step (original behavior)
-        self._obstacle_step()
-
-        # collision check
-        if self.agent_pos in self.obstacles:
-            terminated = True
-            reward += self.collision_penalty
-        elif self.agent_pos == self.goal_pos:
-            terminated = True
-            reward += self.goal_reward
-
-        if self.step_count >= self.max_steps:
-            truncated = True
-
-        return self._get_obs(), reward, terminated, truncated, {}
-
     def _get_obs(self):
         ax, ay = self.agent_pos
         gx, gy = self.goal_pos
         flat_obs = [ax, ay, gx, gy]
         for (ox, oy) in self.obstacles:
             flat_obs.extend([ox, oy])
-        # pad if fewer obstacles than max
         while len(flat_obs) < self.observation_space.shape[0]:
             flat_obs.append(0.0)
         return np.array(flat_obs, dtype=np.float32)
 
-    # -----------------------------------------------------
     def render(self):
         if self.render_mode != "human":
             return self._get_obs().tolist()
@@ -132,4 +137,7 @@ class GridWorldEnv(gym.Env):
         print()
 
     def close(self):
-        pass 
+        pass
+
+    def seed(self, seed=None):
+        np.random.seed(seed)
