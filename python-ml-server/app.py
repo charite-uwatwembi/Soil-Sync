@@ -10,6 +10,8 @@ from twilio.request_validator import RequestValidator
 from twilio.twiml.messaging_response import MessagingResponse
 import requests
 from typing import Optional
+from rl_env.gridworld_env import GridWorldEnv
+from stable_baselines3 import PPO
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -305,6 +307,24 @@ class FertilizerModelServer:
 
 model_server = FertilizerModelServer()
 
+# ---------------- RL Simulation ----------------
+# Create single environment instance (thread-unsafe, simple demo)
+simulation_env = GridWorldEnv()
+current_state, _ = simulation_env.reset()
+
+# Attempt to load a pre-trained agent if present
+trained_agent = None
+try:
+    rl_model_path = os.path.join(os.path.dirname(__file__), "ML_Models", "iot_agent_ppo.zip")
+    if os.path.exists(rl_model_path):
+        trained_agent = PPO.load(rl_model_path, device="cpu")
+        logger.info("Loaded RL agent from %s", rl_model_path)
+    else:
+        logger.warning("No RL model found at %s — endpoints will accept manual actions", rl_model_path)
+except Exception as rl_exc:
+    logger.warning("Failed to load RL agent: %s", rl_exc)
+
+
 @app.route('/health', methods=['GET'])
 def health_check():
     return jsonify({
@@ -464,6 +484,87 @@ def send_sms():
             'success': False,
             'error': str(e)
         }), 500
+
+@app.route("/sim/reset", methods=["POST"])
+def sim_reset():
+    """Reset the IoT device environment and return the initial observation."""
+    global current_state
+    seed = request.json.get("seed") if request.is_json else None
+    current_state, _ = simulation_env.reset(seed=seed)
+    goal = [int(x) for x in getattr(simulation_env, 'goal_pos', (0,0))]
+    obstacles = [[int(x) for x in o] for o in getattr(simulation_env, 'obstacles', [])]
+    return jsonify({
+        "state": current_state.tolist(),
+        "goal": goal,
+        "obstacles": obstacles
+    })
+
+
+@app.route("/sim/step", methods=["POST"])
+def sim_step():
+    """Perform an environment step.
+
+    Expected JSON body: { "action": 0-3 }  OR { "policy": true } to use the RL policy.
+    """
+    global current_state
+    if not request.is_json:
+        return jsonify({"error": "Request must be JSON"}), 400
+    data = request.get_json()
+
+    # Determine action
+    if data.get("policy") is True:
+        # Ensure state shape matches policy observation space
+        obs_dim_expected = trained_agent.observation_space.shape[0] if trained_agent else len(current_state)
+        if len(current_state) != obs_dim_expected:
+            logger.warning("State dim %s != expected %s – resetting env", len(current_state), obs_dim_expected)
+            current_state, _ = simulation_env.reset()
+            # Skip policy prediction this step; return new state so client can continue safely
+            goal = [int(x) for x in getattr(simulation_env, 'goal_pos', (0,0))]
+            obstacles = [[int(x) for x in o] for o in getattr(simulation_env, 'obstacles', [])]
+            return jsonify({
+                "state": current_state.tolist(),
+                "goal": goal,
+                "obstacles": obstacles,
+                "terminated": False,
+                "truncated": False,
+                "action": None,
+                "note": "env_reset_due_to_dim_mismatch"
+            })
+        if trained_agent is None:
+            return jsonify({"error": "No trained agent available"}), 400
+        action, _ = trained_agent.predict(current_state, deterministic=True)
+        action = int(action)
+    else:
+        if "action" not in data:
+            return jsonify({"error": "Missing 'action' field"}), 400
+        action = int(data["action"])
+
+    next_state, reward, terminated, truncated, _ = simulation_env.step(action)
+    current_state = next_state  # update global
+
+    goal = [int(x) for x in getattr(simulation_env, 'goal_pos', (0,0))]
+    obstacles = [[int(x) for x in o] for o in getattr(simulation_env, 'obstacles', [])]
+    return jsonify({
+        "state": next_state.tolist(),
+        "goal": goal,
+        "obstacles": obstacles,
+        "reward": reward,
+        "terminated": terminated,
+        "truncated": truncated,
+        "action": action
+    })
+
+
+@app.route("/sim/state", methods=["GET"])
+def sim_state():
+    """Get the current observation without stepping."""
+    goal = [int(x) for x in getattr(simulation_env, 'goal_pos', (0,0))]
+    obstacles = [[int(x) for x in o] for o in getattr(simulation_env, 'obstacles', [])]
+    return jsonify({
+        "state": current_state.tolist(),
+        "goal": goal,
+        "obstacles": obstacles
+    })
 
 if __name__ == '__main__':
     load_dotenv()

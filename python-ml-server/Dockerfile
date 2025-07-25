@@ -6,8 +6,8 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application code
-COPY app.py .
+# Copy application code (entire directory to include rl_env)
+COPY . .
 
 # Create directory for ML models
 RUN mkdir -p ML_Models

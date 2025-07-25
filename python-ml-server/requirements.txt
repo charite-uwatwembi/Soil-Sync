@@ -10,3 +10,7 @@ flask_cors
 python-dotenv
 twilio
 requests
+gymnasium==0.29.1
+stable-baselines3==2.3.2
+pybullet==3.2.5
+torch==2.3.0+cpu  # use +cpu build; switch to +cu118 etc. if you have GPU
