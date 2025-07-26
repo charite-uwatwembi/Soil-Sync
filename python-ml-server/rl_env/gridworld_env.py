@@ -13,7 +13,9 @@ class GridWorldEnv(gym.Env):
 
     metadata = {"render_modes": ["human", "state"], "render_fps": 4}
 
-    def __init__(self, width: int = 10, height: int = 10, n_obstacles: int = 3, render_mode: str | None = None):
+    def __init__(self, render_mode: str | None = None, *, width: int = 10, height: int = 10, n_obstacles: int = 3):
+        # Defensive logging to help catch incorrect argument ordering during instantiation
+        print(f"Init GridWorldEnv with width={width}, height={height}, obstacles={n_obstacles}, mode={render_mode}")
         super().__init__()
         self.w = width
         self.h = height
