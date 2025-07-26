@@ -15,12 +15,14 @@ RUN mkdir -p ML_Models
 # Copy ML models
 COPY ML_Models ./ML_Models
 
-# Expose port
-EXPOSE 8000
+# Render sets the PORT env var dynamically (e.g., 10000). Use it, fallback to 8000 for local dev
+ENV PORT=${PORT:-8000}
+
+EXPOSE $PORT
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:8000/health || exit 1
+  CMD curl -f http://localhost:$PORT/health || exit 1
 
 # Run the application
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "4", "--timeout", "120", "app:app"]
+CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:$PORT --workers 4 --timeout 120 app:app"]
