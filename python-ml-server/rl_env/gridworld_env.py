@@ -1,7 +1,7 @@
 import numpy as np
 import gymnasium as gym
 from gymnasium import spaces
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
 
 class GridWorldEnv(gym.Env):
@@ -13,7 +13,7 @@ class GridWorldEnv(gym.Env):
 
     metadata = {"render_modes": ["human", "state"], "render_fps": 4}
 
-    def __init__(self, render_mode: str | None = None, *, width: int = 10, height: int = 10, n_obstacles: int = 3):
+    def __init__(self, render_mode: Optional[str] = None, *, width: int = 10, height: int = 10, n_obstacles: int = 3):
         # Defensive logging to help catch incorrect argument ordering during instantiation
         print(f"Init GridWorldEnv with width={width}, height={height}, obstacles={n_obstacles}, mode={render_mode}")
         super().__init__()
@@ -29,8 +29,8 @@ class GridWorldEnv(gym.Env):
 
         self.action_space = spaces.Discrete(4)  # N, S, W, E
 
-        self.agent_pos: Tuple[int, int] | None = None
-        self.goal_pos: Tuple[int, int] | None = None
+        self.agent_pos: Optional[Tuple[int, int]] = None
+        self.goal_pos: Optional[Tuple[int, int]] = None
         self.obstacles: List[Tuple[int, int]] = []
         self.step_penalty = -0.05
         self.goal_reward = 10.0
@@ -38,7 +38,7 @@ class GridWorldEnv(gym.Env):
         self.max_steps = 200
         self.step_count = 0
 
-    def reset(self, *, seed: int | None = None, options: dict | None = None):
+    def reset(self, *, seed: Optional[int] = None, options: Optional[dict] = None):
         super().reset(seed=seed)
         rng = np.random.default_rng(seed)
         self.step_count = 0

@@ -1,6 +1,7 @@
 import numpy as np
 import gymnasium as gym
 from gymnasium import spaces
+from typing import Optional
 
 
 class IoTDeviceEnv(gym.Env):
@@ -30,7 +31,7 @@ class IoTDeviceEnv(gym.Env):
 
     metadata = {"render_modes": ["human", "state"], "render_fps": 4}
 
-    def __init__(self, render_mode: str | None = None):
+    def __init__(self, render_mode: Optional[str] = None):
         super().__init__()
         self.render_mode = render_mode
 
@@ -46,7 +47,7 @@ class IoTDeviceEnv(gym.Env):
         # Action space: idle, measure+tx, irrigate, fertilize, move N,S,W,E
         self.action_space = spaces.Discrete(8)
 
-        self.state: np.ndarray | None = None
+        self.state: Optional[np.ndarray] = None
         self.step_count = 0
         self.max_steps = 288  # ~12 days at 1-hour steps
 
@@ -57,7 +58,7 @@ class IoTDeviceEnv(gym.Env):
     # ------------------------------------------------------------------
     # Core Gym API
     # ------------------------------------------------------------------
-    def reset(self, *, seed: int | None = None, options: dict | None = None):
+    def reset(self, *, seed: Optional[int] = None, options: Optional[dict] = None):
         super().reset(seed=seed)
         rng = np.random.default_rng(seed)
         start_x = self.grid_width // 2
