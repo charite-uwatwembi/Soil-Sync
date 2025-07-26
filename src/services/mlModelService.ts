@@ -1,4 +1,3 @@
-import type { ModelInput } from '../components/SoilForm';
 import { supabase } from '../lib/supabase';
 
 export interface MLModelInput extends SoilModelInput {}
@@ -148,7 +147,7 @@ class MLModelService {
     let confidence = 85;
     let expectedYield = 15;
 
-    // Enhanced decision logic based on soil science with improved confidence scoring
+    // Enhanced decision logic based on soil science with improved confidence scoring (primary deficiency rules)
     if (Nitrogen < 0.15) {
       fertilizer = "Urea";
       rate = 120;
@@ -160,7 +159,7 @@ class MLModelService {
       confidence = 89; // High confidence for N+P deficiency
       expectedYield = 22;
     } else if (Phosphorous < 10) {
-      fertilizer = "NPK 10-26-26";
+      fertilizer = "DAP";
       rate = 100;
       confidence = 87; // High confidence for P deficiency
       expectedYield = 20;
@@ -180,6 +179,9 @@ class MLModelService {
       confidence = 86; // High confidence for high P maintenance
       expectedYield = 19;
     }
+
+    // Mark whether a nutrient-deficiency fertilizer has been selected
+    const deficiencyAssigned = fertilizer !== "NPK 17-17-17";
 
     // Organic matter adjustments
     if (organicCarbon < 1.0) {
@@ -213,7 +215,8 @@ class MLModelService {
       case 'maize':
         rate *= 1.1;
         expectedYield += 5;
-        if (Nitrogen < 0.25) {
+        // Only override fertilizer if no deficiency-specific fertilizer was set
+        if (!deficiencyAssigned && Nitrogen < 0.25) {
           fertilizer = "NPK 23-10-5";
         }
         break;

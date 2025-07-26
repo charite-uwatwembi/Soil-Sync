@@ -12,14 +12,18 @@
   },
   "dependencies": {
     "20": "^3.1.9",
+    "@react-three/drei": "^9.122.0",
+    "@react-three/fiber": "^8.15.11",
     "@supabase/supabase-js": "^2.39.0",
+    "axios": "^1.11.0",
     "chart.js": "^4.4.0",
     "dotenv": "^17.0.1",
     "lucide-react": "^0.344.0",
     "react": "^18.3.1",
     "react-chartjs-2": "^5.2.0",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^7.6.3"
+    "react-router-dom": "^7.6.3",
+    "three": "^0.160.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.1",

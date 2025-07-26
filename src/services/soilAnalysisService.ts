@@ -64,7 +64,7 @@ class SoilAnalysisService {
     let rate = 150;
     let confidence = 85;
     let expectedYield = 15;
-    // Enhanced decision logic
+    // Enhanced decision logic (primary nutrient-deficiency rules)
     if (Nitrogen < 0.15) {
       fertilizer = "Urea";
       rate = 120;
@@ -76,7 +76,7 @@ class SoilAnalysisService {
       confidence = 91;
       expectedYield = 22;
     } else if (Phosphorous < 10) {
-      fertilizer = "NPK 10-26-26";
+      fertilizer = "DAP";
       rate = 100;
       confidence = 89;
       expectedYield = 20;
@@ -96,6 +96,10 @@ class SoilAnalysisService {
       confidence = 88;
       expectedYield = 19;
     }
+
+    // Remember whether a deficiency-based fertilizer has already been chosen
+    const deficiencyAssigned = fertilizer !== "NPK 17-17-17";
+ 
     // Organic matter adjustments
     if (organicCarbon < 1.0) {
       rate *= 1.15;
@@ -121,6 +125,10 @@ class SoilAnalysisService {
       case 'maize':
         rate *= 1.1;
         expectedYield += 5;
+        // Only override fertilizer if no deficiency-specific fertilizer was set
+        if (!deficiencyAssigned && Nitrogen < 0.25) {
+          fertilizer = 'NPK 23-10-5';
+        }
         break;
       case 'beans':
         rate *= 0.7;

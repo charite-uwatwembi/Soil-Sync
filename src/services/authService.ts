@@ -88,7 +88,7 @@ class AuthService {
         fullName: user.user_metadata?.full_name,
         avatarUrl: user.user_metadata?.avatar_url,
         planType: user.user_metadata?.plan_type || 'free',
-        role: (user.app_metadata as any)?.role || 'user',
+        role: (user.app_metadata as any).role ?? 'user',
       };
     }
     return null;

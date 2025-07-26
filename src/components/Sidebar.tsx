@@ -39,6 +39,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     { id: 'Analytics', icon: BarChart3, label: t('nav.analytics') },
     { id: 'Crops', icon: Sprout, label: t('nav.crops') },
     { id: 'Virtual Sensors', icon: Zap, label: 'Virtual Sensors' },
+    ...(user && user.role === 'admin' ? [{ id: 'RL Simulator', icon: Sprout, label: 'RL Simulator' }] : []),
     { id: 'Agriculture News', icon: TrendingUp, label: t('nav.agricultureNews') },
     { id: 'History', icon: FileText, label: t('nav.history') },
     { id: 'Alerts', icon: Bell, label: t('nav.alerts') },

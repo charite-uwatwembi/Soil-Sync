@@ -95,7 +95,7 @@ class SMSService {
       confidence = 91;
       expectedYield = 22;
     } else if (phosphorus < 10) {
-      fertilizer = "TSP";
+      fertilizer = "DAP";
       rate = 100;
       confidence = 89;
       expectedYield = 20;

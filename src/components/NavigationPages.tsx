@@ -25,6 +25,7 @@ import { useNotifications } from '../contexts/NotificationContext';
 import { adminService } from '../services/adminService';
 import { analyticsService } from '../services/analyticsService';
 import AdminHealthPanel from './admin/AdminHealthPanel';
+import RLSimulator3D from './RLSimulator3D';
 import SMSService from './SMSService';
 
 interface NavigationPagesProps {
@@ -63,6 +64,8 @@ const NavigationPages: React.FC<NavigationPagesProps> = ({ isDarkMode, activePag
         return <APIReferencePage isDarkMode={isDarkMode} />;
       case 'Admin':
         return <AdminDashboard isDarkMode={isDarkMode} user={user} />;
+      case 'RL Simulator':
+        return isAdminUser(user) ? <RLSimulator3D /> : <DashboardPage isDarkMode={isDarkMode} />;
       default:
         return <DashboardPage isDarkMode={isDarkMode} />;
     }
