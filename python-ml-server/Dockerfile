@@ -16,9 +16,10 @@ RUN mkdir -p ML_Models
 COPY ML_Models ./ML_Models
 
 # Render sets the PORT env var dynamically (e.g., 10000). Use it, fallback to 8000 for local dev
-ENV PORT=${PORT:-8000}
+ENV PORT 8000
 
-EXPOSE $PORT
+# Expose default port for local dev (Render ignores EXPOSE)
+EXPOSE 8000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
