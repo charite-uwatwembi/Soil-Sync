@@ -236,11 +236,6 @@ GitHub Actions run linting & tests on every PR. Successful merges to `main` trig
 - Render for the ML backend
 - Supabase CLI for Edge Functions & migrations
 
-## 🤝 Code of Conduct
-Please read our [Code of Conduct](CODE_OF_CONDUCT.md) before contributing.
-
-## 🗒️ Changelog
-All notable changes are documented in [CHANGELOG.md](CHANGELOG.md).
 
 ## 🌍 Internationalisation
 Translations live in `src/translations/`. Add a new JSON file (e.g. `fr.json`) and import it via `LanguageContext`.
