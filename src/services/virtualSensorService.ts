@@ -195,39 +195,39 @@ class VirtualSensorService {
         enabled: true,
         reading_frequency: 90, // Every 1.5 hours
         last_reading: new Date().toISOString()
-      },
-      // Potato fields
-      {
-        id: 'VIRTUAL_POTATO_001',
-        name: 'Musanze Potato Field',
-        location: { latitude: -1.4987, longitude: 29.6359, city: 'Musanze', district: 'Musanze' },
-        crop_type: 'potato',
-        soil_type: 'Sandy',
-        farmer_phone: '+250788473123',
-        farmer_name: 'Agnes Mukamana',
-        field_name: 'Highland Field',
-        planting_date: '2024-01-25',
-        area_hectares: 1.5,
-        enabled: true,
-        reading_frequency: 75, // Every 1.25 hours
-        last_reading: new Date().toISOString()
-      },
-      // Bean cultivation
-      {
-        id: 'VIRTUAL_BEANS_001',
-        name: 'Rubavu Bean Field',
-        location: { latitude: -1.6792, longitude: 29.2664, city: 'Rubavu', district: 'Rubavu' },
-        crop_type: 'beans',
-        soil_type: 'Loamy',
-        farmer_phone: '+250789951064',
-        farmer_name: 'Emmanuel Habimana',
-        field_name: 'Valley Field',
-        planting_date: '2024-02-10',
-        area_hectares: 2.0,
-        enabled: true,
-        reading_frequency: 180, // Every 3 hours
-        last_reading: new Date().toISOString()
       }
+      // Potato fields
+      // {
+      //   id: 'VIRTUAL_POTATO_001',
+      //   name: 'Musanze Potato Field',
+      //   location: { latitude: -1.4987, longitude: 29.6359, city: 'Musanze', district: 'Musanze' },
+      //   crop_type: 'potato',
+      //   soil_type: 'Sandy',
+      //   farmer_phone: '+250788473123',
+      //   farmer_name: 'Agnes Mukamana',
+      //   field_name: 'Highland Field',
+      //   planting_date: '2024-01-25',
+      //   area_hectares: 1.5,
+      //   enabled: true,
+      //   reading_frequency: 75, // Every 1.25 hours
+      //   last_reading: new Date().toISOString()
+      // },
+      // Bean cultivation
+      // {
+      //   id: 'VIRTUAL_BEANS_001',
+      //   name: 'Rubavu Bean Field',
+      //   location: { latitude: -1.6792, longitude: 29.2664, city: 'Rubavu', district: 'Rubavu' },
+      //   crop_type: 'beans',
+      //   soil_type: 'Loamy',
+      //   farmer_phone: '+250789951064',
+      //   farmer_name: 'Emmanuel Habimana',
+      //   field_name: 'Valley Field',
+      //   planting_date: '2024-02-10',
+      //   area_hectares: 2.0,
+      //   enabled: true,
+      //   reading_frequency: 180, // Every 3 hours
+      //   last_reading: new Date().toISOString()
+      // }
     ];
 
     this.sensors = virtualSensors;

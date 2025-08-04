@@ -306,7 +306,8 @@ class MLModelService {
           prediction_result: output,
           confidence_score: output.confidenceScore,
           processing_time_ms: output.processingTime,
-          model_type: 'joblib'
+          model_type: 'joblib',
+          success: true
         });
 
       if (error) {

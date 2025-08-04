@@ -25,18 +25,42 @@ class AdminService {
     return {sent,delivered,failed,recent:data||[]};
   }
 
-  async getPredictionStats():Promise<{count24:number;avgLatency:number;errorRate:number}> {
-    const since = new Date(Date.now()-24*60*60*1000).toISOString();
-    const { data } = await supabase
+  async getPredictionStats(): Promise<{ count24: number; total: number; avgLatency: number; errorRate: number }> {
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+
+    // Pull success flag so we can calculate failure ratio
+    const { data, error } = await supabase
       .from('ml_predictions')
-      .select('processing_time_ms')
-      .gte('created_at',since);
-    const count=data?.length||0;
-    const latencyArr=(data||[]).map((d:any)=>Number(d.processing_time_ms)||0);
-    const avgLatency = latencyArr.length? latencyArr.reduce((a,b)=>a+b,0)/latencyArr.length:0;
-    // Error rate is not tracked yet; set to 0
-    const errorRate = 0;
-    return {count24:count,avgLatency:Math.round(avgLatency),errorRate};
+      .select('processing_time_ms, success')
+      .gte('created_at', since);
+
+    if (error) {
+      console.error('getPredictionStats error', error);
+      return { count24: 0, total: 0, avgLatency: 0, errorRate: 0 };
+    }
+
+    const count = data?.length || 0;
+    const latencyArr = (data || []).map((d: any) => Number(d.processing_time_ms) || 0);
+    const avgLatency = latencyArr.length ? latencyArr.reduce((a, b) => a + b, 0) / latencyArr.length : 0;
+
+    const failures = (data || []).filter((r: any) => r.success === false).length;
+    const errorRate = count ? Number(((failures / count) * 100).toFixed(1)) : 0;
+
+    // Get total count of predictions (head query for performance)
+    // Separate lightweight count query (head:true returns only count in Supabase)
+    let { count: totalCount } = await supabase
+      .from('ml_predictions')
+      .select('id', { count: 'exact', head: true });
+
+    // Fallback: some PostgREST versions return null with head:true under RLS
+    if (totalCount === null) {
+      const { count } = await supabase
+        .from('ml_predictions')
+        .select('id', { count: 'exact' });
+      totalCount = count ?? 0;
+    }
+
+    return { count24: count, total: totalCount || 0, avgLatency: Math.round(avgLatency), errorRate };
   }
 
   async getActiveSensorCount(): Promise<number> {
@@ -56,6 +80,22 @@ class AdminService {
     });
     if (error) throw error;
     return path;
+  }
+
+  // Fetch recent predictions (default 100) ordered by newest first
+  async getPredictionHistory(limit: number = 100): Promise<any[]> {
+    const { data, error } = await supabase
+      .from('ml_predictions')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(limit);
+
+    if (error) {
+      console.error('getPredictionHistory error', error);
+      return [];
+    }
+
+    return data || [];
   }
 }
 

@@ -27,6 +27,21 @@ const RLSimulator3D: React.FC = () => {
   const [obstacles, setObstacles] = useState<number[][]>([]);
   const [auto, setAuto] = useState<boolean>(false);
 
+  // Load initial env state on mount
+  useEffect(() => {
+    const fetchInit = async () => {
+      try {
+        const init = await rlSimulationService.reset();
+        setState(init.state);
+        setGoal(init.goal);
+        setObstacles(init.obstacles);
+      } catch (err) {
+        console.error('Failed to init RL sim:', err);
+      }
+    };
+    fetchInit();
+  }, []);
+
   useEffect(() => {
     let interval: NodeJS.Timeout | undefined;
     if (auto) {

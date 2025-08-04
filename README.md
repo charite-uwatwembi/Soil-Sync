@@ -53,7 +53,7 @@ Experience SoilSync live here: [https://soil-sync-proj.vercel.app/](https://soil
 ## 📸 Screenshots
 
 - **Dashboard Overview (Light Theme):** ![Dashboard Screenshot](public/dashboard.png)
-- **Dashboard Overview (Dark Theme):** ![Dashboard Screenshot Dark](public/image.png)
+- **Dashboard Overview (Dark Theme):** ![Dashboard Screenshot Dark](public/darkmode.png)
 - **AgriNews & recommendation history Page:** ![AgriNews Screenshot](public/news.png)
 - **Soil Analysis Page:** ![Soil Analysis Screenshot](public/analysis.png)
 - **IoT Simulator:** ![IoT Simulator Screenshot](public/iot.png)
@@ -213,5 +213,44 @@ npm run dev
 - Hosted Link: [soilsync.rw](https://soil-sync-proj.vercel.app/)
 
 ---
+
+## 📝 License
+SoilSync is released under the MIT License. See [LICENSE](LICENSE) for details.
+
+## 🧑‍💻 Local Development Workflow
+If you want to develop offline without the cloud services:
+1. Install the Supabase CLI and run `supabase start` to spin up Postgres and the API locally.
+2. Run migrations with `supabase db reset && supabase db push`.
+3. Start the Edge Functions dev server with `supabase functions serve --watch`.
+4. In a separate terminal, start the ML backend (`python-ml-server/app.py`) and React app (`npm run dev`).
+5. Optionally run everything with Docker Compose: `docker compose -f deployment/docker-compose.yml up`.
+
+## 🧪 Testing
+- **Frontend:** `npm test` (Vitest + React Testing Library)
+- **Backend (Python):** `pytest` inside `python-ml-server/`
+- **End-to-End:** Coming soon with Playwright.
+
+## 🚚 CI/CD
+GitHub Actions run linting & tests on every PR. Successful merges to `main` trigger automatic deployments:
+- Vercel for the frontend
+- Render for the ML backend
+- Supabase CLI for Edge Functions & migrations
+
+## 🤝 Code of Conduct
+Please read our [Code of Conduct](CODE_OF_CONDUCT.md) before contributing.
+
+## 🗒️ Changelog
+All notable changes are documented in [CHANGELOG.md](CHANGELOG.md).
+
+## 🌍 Internationalisation
+Translations live in `src/translations/`. Add a new JSON file (e.g. `fr.json`) and import it via `LanguageContext`.
+
+## 📅 Roadmap
+- Push-notification alerts
+- Sensor calibration assistant
+- Offline-first PWA
+
+## 🙏 Acknowledgements
+Dataset from *Soil nutrient balance 454 field trials* (ICRISAT) and icons by [Phosphor Icons](https://phosphoricons.com).
 
 **Happy Farming with SoilSync! 🌱🤖**
